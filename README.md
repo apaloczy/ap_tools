@@ -7,8 +7,6 @@ datasets: Functions to handle datasets (e.g., WOA, ETOPO).
 
 dyn:      Functions to calculate dynamical quantities.
 
-lines:    Functions to calculate curvature and normal of a line.
-
 roms:     Ancillary functions to manipulate ROMS variables.
 
 sat:      Functions to manipulate satellite data.
