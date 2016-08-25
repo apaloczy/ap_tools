@@ -30,7 +30,7 @@ __all__ = ['flowfun',
            'get_isobath',
            'angle_isobath',
            'isopyc_depth',
-		       'whiten_zero',
+		   'whiten_zero',
            'wind2stress',
            'maxwindow',
            'gen_dates',
@@ -1248,3 +1248,7 @@ def dots_dualcolor(x, y, z, thresh=20., color_low='b', color_high='r', marker='o
 	# Above-threshold dots.
 	f=z>thresh
 	ax.plot(x[f], y[f], lw=0, marker=marker, ms=markersize, mfc=color_high, mec=color_high)
+
+if __name__=='__main__':
+  import doctest
+  doctest.testmod()
