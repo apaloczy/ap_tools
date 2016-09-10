@@ -1033,7 +1033,11 @@ def isopyc_depth(z, dens0, isopyc=1027.75, dzref=1.):
                 dens0ref = np.interp(zref, z, dens0ij) # Refined density profile.
                 dens0refn = near(dens0ref, isopyc)
                 fz=dens0ref==dens0refn
-                hisopyc[j,i] = zref[fz]
+                try:
+                    hisopyc[j,i] = zref[fz]
+                except ValueError:
+                    print "Warning: More than 1 (%d) nearest depths found. Using the median of the depths for point (j=%d,i=%d)."%(fz.sum(), j, i)
+                    hisopyc[j,i] = np.nanmedian(zref[fz])
 
     return hisopyc
 
