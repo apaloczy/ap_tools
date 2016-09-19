@@ -297,11 +297,6 @@ def bbox2ij(lon, lat, bbox=[-135., -85., -76., -64.], FIX_IDL=True):
     IDL_BBOX=dlon>180.
     IDL_BBOX=np.logical_and(IDL_BBOX, FIX_IDL)
 
-    # Test whether the wanted bbox crosses edges of the longitude array.
-    lon_left, lon_right = lon.ravel()[0], lon.ravel()[-1]
-    lon_edge = 0.5*(lon_left + lon_right)
-    SPLIT_BBOX=np.logical_and(lon_edge>bbox[0], lon_edge<bbox[1])
-
     mypath = np.array([bbox[[0,1,1,0]], bbox[[2,2,3,3]]]).T
     p = path.Path(mypath)
     points = np.vstack((lon.flatten(), lat.flatten())).T
@@ -316,10 +311,13 @@ def bbox2ij(lon, lat, bbox=[-135., -85., -76., -64.], FIX_IDL=True):
         fcol = np.tile(fcol, (n, 1))
         flin = np.tile(flin, (1, m))
         inside=np.logical_and(flin, fcol)
+        print("Bbox crosses the International Date Line.")
 
     ii, jj = np.meshgrid(range(m), range(n))
     iiin, jjin = ii[inside], jj[inside]
     i0, i1, j0, j1 = min(iiin), max(iiin), min(jjin), max(jjin)
+
+    SPLIT_BBOX=(i1-i0)==(m-1) # Test whether the wanted bbox crosses edges of the longitude array.
 
     # If wanted bbox crosses edges of the longitude array, return indices for the two boxes separately.
     if SPLIT_BBOX:
