@@ -14,6 +14,7 @@ __all__ = ['flowfun',
            'lon360to180',
            'bbox2ij',
            'near',
+           'near2',
            'mnear',
            'refine',
            'denan',
@@ -352,6 +353,46 @@ def near(x, x0, npts=1):
         xnear = np.array(xnear)
 
     return xnear
+
+def near2(x, y, x0, y0, npts=1):
+    """
+    USAGE
+    -----
+    xnear, ynear = near(x, y, x0, y0, npts=1)
+
+    Finds 'npts' points (defaults to 1) in arrays 'x' and 'y'
+    that are closest to a specified '(x0, y0)' point.
+
+    Example
+    -------
+    >>> x = np.arange(0., 100., 0.25)
+    >>> y = np.arange(0., 100., 0.25)
+    >>> x, y = np.meshgrid(x, y)
+    >>> x0, y0 = 44.1, 30.9
+    >>> xn, yn = near2(x, y, x0, y0, npts=1)
+    >>> print "(x0, y0) = (%f, %f)"%(x0, y0)
+    >>> print "(xn, yn) = (%f, %f)"%(xn, yn)
+    """
+    x, y = map(np.asanyarray, (x, y))
+
+    xnear, ynear = [], []
+    for n in xrange(npts):
+        dx = np.array(x) - x0
+        dy = np.array(y) - y0
+        dr = np.sqrt(dx**2 + dy**2)
+        idx = np.where(dr==np.nanmin(dr))
+        xidx, yidx = idx[0][0], idx[1][0]
+        xnear.append(x[xidx,yidx])
+        ynear.append(y[xidx,yidx])
+        x[xidx,yidx] = np.nan
+        y[xidx,yidx] = np.nan
+
+    if npts==1:
+        xnear, ynear  = xnear[0], ynear[0]
+    else:
+        xnear, ynear = map(np.array, (xnear, ynear))
+
+    return xnear, ynear
 
 def mnear(x, y, x0, y0):
 	"""
