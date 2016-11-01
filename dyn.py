@@ -7,7 +7,7 @@
 
 from __future__ import division
 
-__all__ = ['deg2m_dist'
+__all__ = ['deg2m_dist',
            'divergence',
            'vorticity',
            'pgf']
