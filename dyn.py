@@ -9,6 +9,7 @@ from __future__ import division
 
 __all__ = ['deg2m_dist',
            'divergence',
+           'strain',
            'vorticity',
            'pgf']
 
@@ -57,6 +58,30 @@ def divergence(lon, lat, u, v):
 	div = dudx + dvdy # [1/s]
 
 	return div
+
+def strain(lon, lat, u, v):
+    """
+    USAGE
+    -----
+    alpha = strain(lon, lat, u, v)
+
+    Calculates lateral rate of strain 'alpha' = sqrt[(du/dx - dv/dy)^2 + (du/dy + dv/dx)^2],
+    in 1/s, from the 'u' and 'v' velocity arrays (in m/s) specified in spherical coordinates
+    by the 'lon' and 'lat' 2D meshgrid-type arrays (in degrees).
+    """
+    lon, lat, u, v = map(np.asanyarray, (lon, lat, u, v))
+
+    dx, dy = deg2m_dist(lon, lat) # [m]
+    duy, dux = np.gradient(u)
+    dvy, dvx = np.gradient(v)
+
+    dudx = dux/dx
+    dvdy = dvy/dy
+    dudy = duy/dy
+    dvdx = dvx/dx
+    alpha = np.sqrt((dudx - dvdy)**2 + (dudy + dvdx)**2) # [1/s]
+
+    return alpha
 
 def vorticity(lon, lat, u, v):
 	"""
