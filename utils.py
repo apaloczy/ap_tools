@@ -101,7 +101,7 @@ def flowfun(x, y, u, v, variable='psi', geographic=True):
 	x,y,u,v = map(np.asanyarray, (x,y,u,v))
 
 	if not x.shape==y.shape==u.shape==v.shape:
-		print "Error: Arrays (x, y, u, v) must be of equal shape."
+		print("Error: Arrays (x, y, u, v) must be of equal shape.")
 		return
 
 	## Calculating grid spacings.
@@ -181,7 +181,7 @@ def cumsimp(y):
 		f = np.zeros(y.shape)       # Initialize summation array.
 		squeeze_after = False
 	else:
-		print "Error: Input array has more than 2 dimensions."
+		print("Error: Input array has more than 2 dimensions.")
 		return
 
 	if y.size==2:                   # If only 2 elements in columns - simple average.
@@ -370,8 +370,8 @@ def near2(x, y, x0, y0, npts=1):
     >>> x, y = np.meshgrid(x, y)
     >>> x0, y0 = 44.1, 30.9
     >>> xn, yn = near2(x, y, x0, y0, npts=1)
-    >>> print "(x0, y0) = (%f, %f)"%(x0, y0)
-    >>> print "(xn, yn) = (%f, %f)"%(xn, yn)
+    >>> print("(x0, y0) = (%f, %f)"%(x0, y0))
+    >>> print("(xn, yn) = (%f, %f)"%(xn, yn))
     """
     x, y = map(np.asanyarray, (x, y))
 
@@ -486,12 +486,12 @@ def get_mask_from_poly(xp, yp, poly, verbose=False):
 	shape = (n,2), return a boolean array 'mask', where points that lie inside
 	'poly' are set to 'True'.
 	"""
-	print 'Building the polygon mask...'
+	print('Building the polygon mask...')
 	jmax, imax = xp.shape
 	mask = np.zeros((jmax,imax))
 	for j in xrange(jmax):
 		if verbose:
-			print "Row %s of %s"%(j+1,jmax)
+			print("Row %s of %s"%(j+1,jmax))
 		for i in xrange(imax):
 			px, py = xp[j,i], yp[j,i]
 			# Test if this point is within the polygon.
@@ -1075,7 +1075,7 @@ def isopyc_depth(z, dens0, isopyc=1027.75, dzref=1.):
                 try:
                     hisopyc[j,i] = zref[fz]
                 except ValueError:
-                    print "Warning: More than 1 (%d) nearest depths found. Using the median of the depths for point (j=%d,i=%d)."%(fz.sum(), j, i)
+                    print("Warning: More than 1 (%d) nearest depths found. Using the median of the depths for point (j=%d,i=%d)."%(fz.sum(), j, i))
                     hisopyc[j,i] = np.nanmedian(zref[fz])
 
     return hisopyc
@@ -1205,7 +1205,7 @@ def float2latex(f, ndigits=1):
 	float_str = "{0:.%se}"%ndigits
 	float_str = float_str.format(f)
 	base, exponent = float_str.split("e")
-	return ur"${0} \times 10^{{{1}}}$".format(base, int(exponent))
+	return "${0} \times 10^{{{1}}}$".format(base, int(exponent))
 
 def extract_npz(fname):
 	"""

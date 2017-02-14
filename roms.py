@@ -10,7 +10,6 @@
 __all__ = ['energy_diagnostics',
 		   'vel_ke',
 		   'pe',
-		   'vorticity',
 		   'time_avgstd',
 		   'make_flat_ini']
 
@@ -53,7 +52,7 @@ def energy_diagnostics(avgfile, grdfile, rho0=1025., gridid=None, maskfile='msk_
 	"""
 	avg = Dataset(avgfile)
 
-	print "Loading outputs and grid."
+	print("Loading outputs and grid.")
 	## Load domain mask.
 	if maskfile:
 		mask = np.load(maskfile)
@@ -108,16 +107,16 @@ def energy_diagnostics(avgfile, grdfile, rho0=1025., gridid=None, maskfile='msk_
 	PE = np.array([])
 	for ti in xrange(nt):
 		tp = ti + 1
-		print ""
-		print "Processing time record %s of %s"%(tp,nt)
+		print("")
+		print("Processing time record %s of %s"%(tp,nt))
 
-		print "Calculating density."
+		print("Calculating density.")
 		if maskfile:
 			rho = pden(salt[ti,:,ilat,ilon],temp[ti,:,ilat,ilon],p0[:,ilat,ilon],pr=0.)
 		else:
 			rho = pden(salt[ti,:],temp[ti,:],p0,pr=0.)
 
-		print "Loading velocities."
+		print("Loading velocities.")
 		uu = U[ti,:]
 		vv = V[ti,:]
 
@@ -159,7 +158,7 @@ def energy_diagnostics(avgfile, grdfile, rho0=1025., gridid=None, maskfile='msk_
 		## Find cell volumes.
 		dV = dA*dz # [m3]
 
-		print "Squaring velocities."
+		print("Squaring velocities.")
 		u2v2 = u*u + v*v
 
 		## Total Potential Energy (TPE) density relative to z=0 (energy/volume).
@@ -180,19 +179,19 @@ def energy_diagnostics(avgfile, grdfile, rho0=1025., gridid=None, maskfile='msk_
 			Pe = Pe/Vol
 			Ke = Ke/Vol
 			if verbose and tp==1:
-				print ""
-				print "Total volume of the control volume is %e m3."%Vol
-				print "Normalizing TPE/HKE by this volume, i.e., mean TPE/HKE density [J/m3]."
-				print ""
+				print("")
+				print("Total volume of the control volume is %e m3."%Vol)
+				print("Normalizing TPE/HKE by this volume, i.e., mean TPE/HKE density [J/m3].")
+				print("")
 
 		if verbose:
-			print ""
+			print("")
 			if normalize:
-				print "TPE/vol = %e J/m3"%Pe
-				print "HKE/vol = %e J/m3"%Ke
+				print("TPE/vol = %e J/m3"%Pe)
+				print("HKE/vol = %e J/m3"%Ke)
 			else:
-				print "TPE = %e J"%Pe
-				print "HKE = %e J"%Ke
+				print("TPE = %e J"%Pe)
+				print("HKE = %e J"%Ke)
 
 		PE = np.append(PE, Pe)
 		KE = np.append(KE, Ke)
@@ -212,7 +211,7 @@ def vel_ke(avgfile, grdfile, rho0=1025., gridid=None, maskfile='msk_shelf.npy', 
 	"""
 	avg = Dataset(avgfile)
 
-	print "Loading outputs and grid."
+	print("Loading outputs and grid.")
 	## Load domain mask.
 	if maskfile:
 		mask = np.load(maskfile)
@@ -283,7 +282,7 @@ def vel_ke(avgfile, grdfile, rho0=1025., gridid=None, maskfile='msk_shelf.npy', 
 	KEavg3 = np.array([])
 	for ti in xrange(nt):
 		tp = ti + 1
-		print "Processing time record %s of %s"%(tp,nt)
+		print("Processing time record %s of %s"%(tp,nt))
 		uubar = Ubar[ti,:]
 		vvbar = Vbar[ti,:]
 		uu = U[ti,:]
@@ -362,18 +361,18 @@ def vel_ke(avgfile, grdfile, rho0=1025., gridid=None, maskfile='msk_shelf.npy', 
 			V = dV.sum()
 			Ke2 = Ke2/V
 			Ke3 = Ke3/V
-			print ""
-			print "Total volume of the control volume is %e m3."%V
-			print "Normalizing volume-integrated KE by this volume, i.e., mean KE density [J/m3]."
-			print ""
+			print("")
+			print("Total volume of the control volume is %e m3."%V)
+			print("Normalizing volume-integrated KE by this volume, i.e., mean KE density [J/m3].")
+			print("")
 
 		if verbose:
 			if normalize:
-				print "meanvel2D, maxvel2D, avgKE2D = %.2f m/s, %.2f m/s, %f J/m3"%(magavg2,magmax2,Ke2)
-				print "meanvel3D, maxvel3D, avgKE3D = %.2f m/s, %.2f m/s, %f J/m3"%(magavg3,magmax3,Ke3)
+				print("meanvel2D, maxvel2D, avgKE2D = %.2f m/s, %.2f m/s, %f J/m3"%(magavg2,magmax2,Ke2))
+				print("meanvel3D, maxvel3D, avgKE3D = %.2f m/s, %.2f m/s, %f J/m3"%(magavg3,magmax3,Ke3))
 			else:
-				print "meanvel2D, maxvel2D, KE2D = %.2f m/s, %.2f m/s, %f J"%(magavg2,magmax2,Ke2)
-				print "meanvel3D, maxvel3D, KE3D = %.2f m/s, %.2f m/s, %f J"%(magavg3,magmax3,Ke3)
+				print("meanvel2D, maxvel2D, KE2D = %.2f m/s, %.2f m/s, %f J"%(magavg2,magmax2,Ke2))
+				print("meanvel3D, maxvel3D, KE3D = %.2f m/s, %.2f m/s, %f J"%(magavg3,magmax3,Ke3))
 
 		avgvel2 = np.append(avgvel2,magavg2)
 		maxvel2 = np.append(maxvel2,magmax2)
@@ -403,7 +402,7 @@ def pe(avgfile, grdfile, gridid=None, maskfile='/media/Armadillo/bkp/lado/MSc/wo
 	Cushman-Roisin (1994): Introduction to Geophysical Fluid Dynamics, page 213,
 	Combination of Equations 15-29 and 15-30.
 	"""
-	print "Loading outputs and grid."
+	print("Loading outputs and grid.")
 
 	## Get outputs.
 	avg = Dataset(avgfile)
@@ -472,7 +471,7 @@ def pe(avgfile, grdfile, gridid=None, maskfile='/media/Armadillo/bkp/lado/MSc/wo
 	PE = np.array([])
 	for ti in xrange(nt):
 		tp = ti + 1
-		print "Processing time record %s of %s"%(tp,nt)
+		print("Processing time record %s of %s"%(tp,nt))
 
 		if maskfile:
 			rhoi = pden(salt[ti,:,ilat,ilon],temp[ti,:,ilat,ilon],p0[:,ilat,ilon],pr=0.)
@@ -490,14 +489,14 @@ def pe(avgfile, grdfile, gridid=None, maskfile='/media/Armadillo/bkp/lado/MSc/wo
 			dz = zw[1:,:] - zw[:-1,:]
 
 		## Find cell volumes.
-		print dx.shape,dy.shape,dz.shape
+		print(dx.shape,dy.shape,dz.shape)
 		dV = dA*dz # [m3]
 		dV = 0.5*(dV[1:,:]+dV[:-1,:])
 
 		## Gravitational Available Potential Energy density (energy/volume).
-		print g.shape
-		print rhop.shape
-		print rho0z.shape
+		print(g.shape)
+		print(rhop.shape)
+		print(rho0z.shape)
 		pe = -g*(rhop**2)/(2*rho0z) # [J/m3]
 
 		## Do volume integral to calculate Gravitational Available Potential Energy of the control volume.
@@ -506,16 +505,16 @@ def pe(avgfile, grdfile, gridid=None, maskfile='/media/Armadillo/bkp/lado/MSc/wo
 		if normalize:
 			V = dV.sum()
 			Pe = Pe/V
-			print ""
-			print "Total volume of the control volume is %e m3."%V
-			print "Normalizing PE by this volume, i.e., mean PE density [J/m3]."
-			print ""
+			print("")
+			print("Total volume of the control volume is %e m3."%V)
+			print("Normalizing PE by this volume, i.e., mean PE density [J/m3].")
+			print("")
 
 		if verbose:
 			if normalize:
-				print "PE = %e J/m3"%Pe
+				print("PE = %e J/m3"%Pe)
 			else:
-				print "PE = %e J"%Pe
+				print("PE = %e J"%Pe)
 
 		PE = np.append(PE, Pe)
 
@@ -549,10 +548,10 @@ def time_avgstd(ncfile, calc_std=False, varname='temp', tstart=0., tend=10.):
 	if calc_std:
 		wrk_sq = wrk.copy()
 	c = 0.
-	print ""
-	print "Variable: %s."%varname
+	print("")
+	print("Variable: %s."%varname)
 	for ti in xrange(t1,t2):
-		print "Adding time record %s of %s. t = %s days."%(c+1,nt,time[c])
+		print("Adding time record %s of %s. t = %s days."%(c+1,nt,time[c]))
 		if calc_std:             # Calculate mean and std.
 			vari = ncvar[ti,:]
 			wrk_sq += vari*vari  # Accumumating squares.
@@ -560,7 +559,7 @@ def time_avgstd(ncfile, calc_std=False, varname='temp', tstart=0., tend=10.):
 		else:                    # Calculate mean only.
 			wrk += ncvar[ti,:]
 		c+=1.
-	print ""
+	print("")
 
 	average = wrk/c
 
@@ -620,7 +619,7 @@ def make_flat_ini(grdfile, setup_file, profile_z, profile_T, profile_S, return_a
 	elif Run.vstretching == 4:
 	    scoord = s_coordinate_4(h, Run.theta_b, Run.theta_s, Run.tcline, N, hraw=hraw, zeta=None)
 	else:
-	    raise Warning, 'Unknow vertical stretching: Vtrans = %s'%Run.vstretching
+	    raise(Warning, 'Unknow vertical stretching: Vtrans = %s'%Run.vstretching)
 
 	# Array of depths of RHO-points.
 	z_rho = scoord.z_r[:]

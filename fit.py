@@ -100,8 +100,8 @@ def sinfitn(x, t, periods, constant=True, line=True, return_misfit=False, return
 	err = xm - d
 	L2 = np.sqrt(err.T*err)
 	L2 = np.float(L2)
-	print ""
-	print "Model-data misfit: %.1f"%L2
+	print("")
+	print("Model-data misfit: %.1f"%L2)
 
 	if return_params:
 		if return_misfit:

@@ -62,10 +62,10 @@ def ekman(r=4., plot=True, savefig=False):
 		plt.close('all')
 		fig,ax = plt.subplots()
 		ax.hold(True)
-		ax.plot(u,z,'k-',label=ur'Zonal velocity, u$_{Ek}$')
-		ax.plot(v,z,'k--',label=ur'Meridional velocity, v$_{Ek}$')
-		ax.set_xlabel(ur'Velocity [cm s$^{-1}$]')
-		ax.set_ylabel(ur'Depth [m]')
+		ax.plot(u,z,'k-',label='Zonal velocity, u$_{Ek}$')
+		ax.plot(v,z,'k--',label='Meridional velocity, v$_{Ek}$')
+		ax.set_xlabel('Velocity [cm s$^{-1}$]')
+		ax.set_ylabel('Depth [m]')
 		ax.legend(loc='best',fontsize=13)
 		ax.hold(False)
 		try:
@@ -81,9 +81,9 @@ def ekman(r=4., plot=True, savefig=False):
 		ax.plot(u,v,'k-',linewidth=1.5)
 		# sx = ax.scatter(u,v,c=z,cmap=plt.cm.binary,linewidths=0.,marker='o')
 		# cb = plt.colorbar(mappable=sx)
-		# cb.set_label(ur'Depth [m]')
-		ax.set_xlabel(ur'Zonal velocity [cm s$^{-1}$]')
-		ax.set_ylabel(ur'Meridional velocity [cm s$^{-1}$]')
+		# cb.set_label('Depth [m]')
+		ax.set_xlabel('Zonal velocity [cm s$^{-1}$]')
+		ax.set_ylabel('Meridional velocity [cm s$^{-1}$]')
 		ax.hold(False)
 		try:
 			rstyle(ax)
@@ -116,12 +116,12 @@ def dynmodes(n=6, lat0=5., plot=False, model='Fratantoni_etal1995'):
 	if model=='Fratantoni_etal1995':
 		H = np.array([80.,170.,175.,250.,325.,3000.])
 		S = np.array([24.97,26.30,26.83,27.12,27.32,27.77])
-		tit = ur'Modelo de seis camadas para a CNB de Fratantoni \textit{et al.} (1995)'
+		tit = 'Modelo de seis camadas para a CNB de Fratantoni \textit{et al.} (1995)'
 		figname = 'vmodes_fratantoni_etal1995'
 	elif model=='Bub_Brown1996':
 		H = np.array([150.,440.,240.,445.,225.,2500.])
 		S = np.array([24.13,26.97,27.28,27.48,27.74,27.87])
-		tit = ur'Modelo de seis camadas para a CNB de Bub e Brown (1996)'
+		tit = 'Modelo de seis camadas para a CNB de Bub e Brown (1996)'
 		figname = 'vmodes_bub_brown1996'
 
 	# Normalized density jumps.
@@ -200,8 +200,8 @@ def dynmodes(n=6, lat0=5., plot=False, model='Fratantoni_etal1995'):
 		ax.hlines(Hp,xl,xr,linestyle='dashed')
 		ax.hold(False)
 		ax.set_title(tit, **kw)
-		ax.set_xlabel(ur'Autofunção [adimensional]', **kw)
-		ax.set_ylabel(ur'Profundidade [m]', **kw)
+		ax.set_xlabel('Autofunção [adimensional]', **kw)
+		ax.set_ylabel('Profundidade [m]', **kw)
 		try:
 			rstyle(ax)
 		except:

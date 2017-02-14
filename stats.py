@@ -19,7 +19,7 @@ __all__ = ['gauss_curve',
 		   'autocorr',
 		   'Tdecorr',
 		   'Neff',
-		   'ci_mean'
+		   'ci_mean',
 		   'rsig',
 		   'rsig_student',
 		   'rci_fisher',
@@ -30,7 +30,10 @@ import matplotlib.pyplot as plt
 from scipy.special import erfinv, betainc, betaincinv
 from scipy.stats.distributions import norm
 from scipy.stats.distributions import t as student
-from scikits import bootstrap
+try:
+	from scikits import bootstrap
+except:
+	print("scikits.bootstrap not installed. Function 'rci_boot' will not be available.")
 
 def gauss_curve(r, xmean, xstd):
 	"""
@@ -311,10 +314,10 @@ def Tdecorr(Rxx, M=None, dtau=1.):
 	# negative lags (C is symmetric about zero).
 	Td = (2./C0)*Td
 
-	print ""
-	print "Theoretical integral scale --> 2 * int 0...+inf [Rxx(tau)] dtau: %.2f."%Td[-1]
-	print ""
-	print "Maximum value of the cumulative sum (empirical integral scale): %.2f."%Td.max()
+	print("")
+	print("Theoretical integral scale --> 2 * int 0...+inf [Rxx(tau)] dtau: %.2f."%Td[-1])
+	print("")
+	print("Maximum value of the cumulative sum (empirical integral scale): %.2f."%Td.max())
 
 	return Td
 
@@ -338,8 +341,8 @@ def Neff(Tdecorr, N, dt=1.):
 	"""
 	neff = (N*dt)/Tdecorr # Effective degrees of freedom.
 
-	print ""
-	print "Neff = %.2f"%neff
+	print("")
+	print("Neff = %.2f"%neff)
 
 	return neff
 
@@ -368,9 +371,9 @@ def ci_mean(m_sample, s_sample, ndof_eff, alpha=0.95, verbose=True):
 	xu = m_sample + zs*std_err
 
 	if verbose:
-		print ""
-		print "Sample mean CI (xl,xu): (%.3f,%.3f)"%(xl, xu)
-		print ""
+		print("")
+		print("Sample mean CI (xl,xu): (%.3f,%.3f)"%(xl, xu))
+		print("")
 
 	return (xl,xu)
 
@@ -472,9 +475,9 @@ def rci_fisher(r, ndof_eff, alpha=0.95, verbose=True):
 	xu = np.tanh(z_xu)
 
 	if verbose:
-		print ""
-		print "Fisher transform CI (xl,xu): (%.3f,%.3f)"%(xl, xu)
-		print ""
+		print("")
+		print("Fisher transform CI (xl,xu): (%.3f,%.3f)"%(xl, xu))
+		print("")
 
 	return (xl,xu)
 
@@ -500,8 +503,8 @@ def rci_boot(x, y, alpha=0.95, verbose=True, n_samples=10000, method='bca'):
 	xl, xu = bootstrap.ci((x, y), statfunction=rcoeff, alpha=(1-alpha), n_samples=n_samples, method=method, multi=True)
 
 	if verbose:
-		print ""
-		print "Bootstrapped CI (xl,xu): (%.3f,%.3f)"%(xl, xu)
-		print ""
+		print("")
+		print("Bootstrapped CI (xl,xu): (%.3f,%.3f)"%(xl, xu))
+		print("")
 
 	return (xl,xu)

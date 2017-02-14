@@ -13,11 +13,11 @@ __all__ = ['utils',
            'dyn',
            'stats']
 
-import utils
-import sat
-import study
-import datasets
-import roms
-import fit
-import dyn
-import stats
+from .utils import *
+from .sat import *
+from .study import *
+from .datasets import *
+from .roms import *
+from .fit import *
+from .dyn import *
+from .stats import *
