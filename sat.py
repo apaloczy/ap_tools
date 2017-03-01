@@ -71,13 +71,13 @@ def wind_subset(times=(datetime(2009,12,28), datetime(2010,1,10)),
     # the resolution in the desired dataset.
     nt = time.size
     if dt=='six-hourly':
-        for i in xrange(nt):
+        for i in range(nt):
             time[i] = time[i].replace(minute=0,second=0)
     elif dt=='daily':
-        for i in xrange(nt):
+        for i in range(nt):
             time[i] = time[i].replace(hour=0,minute=0,second=0)
     elif dt=='monthly':
-        for i in xrange(nt):
+        for i in range(nt):
             time[i] = time[i].replace(day=1,hour=0,minute=0,second=0)
     elif dt=='clim':
         time[1] = time[1].replace(month=2) # Fixing February.

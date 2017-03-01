@@ -105,7 +105,7 @@ def energy_diagnostics(avgfile, grdfile, rho0=1025., gridid=None, maskfile='msk_
 
 	KE = np.array([])
 	PE = np.array([])
-	for ti in xrange(nt):
+	for ti in range(nt):
 		tp = ti + 1
 		print("")
 		print("Processing time record %s of %s"%(tp,nt))
@@ -280,7 +280,7 @@ def vel_ke(avgfile, grdfile, rho0=1025., gridid=None, maskfile='msk_shelf.npy', 
 	maxvel3 = np.array([])
 	KEavg2 = np.array([])
 	KEavg3 = np.array([])
-	for ti in xrange(nt):
+	for ti in range(nt):
 		tp = ti + 1
 		print("Processing time record %s of %s"%(tp,nt))
 		uubar = Ubar[ti,:]
@@ -469,7 +469,7 @@ def pe(avgfile, grdfile, gridid=None, maskfile='/media/Armadillo/bkp/lado/MSc/wo
 	rho0z = drho0/dz # Background potential density vertical gradient.
 
 	PE = np.array([])
-	for ti in xrange(nt):
+	for ti in range(nt):
 		tp = ti + 1
 		print("Processing time record %s of %s"%(tp,nt))
 
@@ -550,7 +550,7 @@ def time_avgstd(ncfile, calc_std=False, varname='temp', tstart=0., tend=10.):
 	c = 0.
 	print("")
 	print("Variable: %s."%varname)
-	for ti in xrange(t1,t2):
+	for ti in range(t1,t2):
 		print("Adding time record %s of %s. t = %s days."%(c+1,nt,time[c]))
 		if calc_std:             # Calculate mean and std.
 			vari = ncvar[ti,:]
@@ -631,8 +631,8 @@ def make_flat_ini(grdfile, setup_file, profile_z, profile_T, profile_S, return_a
 	temp = np.empty(rhodim3)
 	salt = np.empty(rhodim3)
 
-	for j in xrange(etamax):
-		for i in xrange(ximax):
+	for j in range(etamax):
+		for i in range(ximax):
 
 			roms_z = zroms[:,j,i]
 

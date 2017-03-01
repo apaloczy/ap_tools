@@ -229,9 +229,9 @@ def autocorr(x, biased=True):
 	xb = x.mean()
 
 	## Summing for lags 0 through N (the size of the sequence).
-	for k in xrange(N):
+	for k in range(N):
 		Cxx_aux = 0.
-		for i in xrange(N-k):
+		for i in range(N-k):
 			Cxx_aux = Cxx_aux + (x[i] - xb)*(x[i+k] - xb)
 
 		# If biased==True, Calculate BIASED autocovariance function,
@@ -301,9 +301,9 @@ def Tdecorr(Rxx, M=None, dtau=1.):
 
 	# Integrate the autocorrelation function.
 	Td = np.zeros(M)
-	for m in xrange(M):
+	for m in range(M):
 		Tdaux = 0.
-		for k in xrange(m-1):
+		for k in range(m-1):
 			Rm = (Rxx[k] + Rxx[k+1])/2. # Midpoint value of the autocorrelation function.
 			Tdaux = Tdaux + Rm*dtau # Riemann-summing Rxx.
 

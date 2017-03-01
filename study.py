@@ -132,7 +132,7 @@ def dynmodes(n=6, lat0=5., plot=False, model='Fratantoni_etal1995'):
 
 	# Building the tridiagonal matrix.
 	A = np.zeros( (n,n) )
-	for i in xrange(n):
+	for i in range(n):
 		A[i,i] = -f02/(E[i+1]*g*H[i]) -f02/(E[i]*g*H[i]) # The main diagonal.
 		if i>0:
 			A[i,i-1] = f02/(E[i]*g*H[i])
@@ -157,7 +157,7 @@ def dynmodes(n=6, lat0=5., plot=False, model='Fratantoni_etal1995'):
 	# find the dynamical mode vertical structure functions.
 	F = np.zeros( (n,n) )
 
-	for i in xrange(n):
+	for i in range(n):
 		mi = v[:,i] # The vertical structure of the i-th vertical mode.
 		fac = np.sqrt(np.sum(H*mi*mi)/np.sum(H))
 		F[:,i] = 1/fac*mi
@@ -168,7 +168,7 @@ def dynmodes(n=6, lat0=5., plot=False, model='Fratantoni_etal1995'):
 
 	Fi = np.vstack( (F[0,:],F) )
 	Fi = np.flipud(Fi)
-	for i in xrange(n-1):
+	for i in range(n-1):
 		Fi[i,:] = F[i+1,:]
 	Fi = np.flipud(Fi)
 
@@ -187,13 +187,13 @@ def dynmodes(n=6, lat0=5., plot=False, model='Fratantoni_etal1995'):
 		Fp = np.zeros( (z.size,n) )
 		fo = 0
 
-		for i in xrange(n):
+		for i in range(n):
 			f1 = near(z,Hp[i])[0][0]
-			for j in xrange(fo,f1):
+			for j in range(fo,f1):
 				Fp[j,:] = F[i,:]
 				fo=f1
 
-		for i in xrange(n):
+		for i in range(n):
 			l = 'Modo %s'%str(i)
 			ax.plot(Fp[:,i], z, label=l)
 		xl,xr = ax.set_xlim(-5,5)

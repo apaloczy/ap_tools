@@ -342,7 +342,7 @@ def near(x, x0, npts=1):
     """
     x = list(x)
     xnear = []
-    for n in xrange(npts):
+    for n in range(npts):
         idx = np.nanargmin(np.abs(np.array(x)-x0))
         xnear.append(x.pop(idx))
     xnear.sort()
@@ -376,7 +376,7 @@ def near2(x, y, x0, y0, npts=1):
     x, y = map(np.asanyarray, (x, y))
 
     xnear, ynear = [], []
-    for n in xrange(npts):
+    for n in range(npts):
         dx = np.array(x) - x0
         dy = np.array(y) - y0
         dr = np.sqrt(dx**2 + dy**2)
@@ -407,7 +407,7 @@ def mnear(x, y, x0, y0):
 	point = (x0,y0)
 
 	d = np.array([])
-	for n in xrange(x.size):
+	for n in range(x.size):
 		xn,yn = x[n],y[n]
 		dn = distance((xn,x0),(yn,y0)) # Calculate distance point-wise.
 		d = np.append(d,dn)
@@ -437,7 +437,7 @@ def refine(line, nref=100, close=True):
 		line = np.append(line,line[0])
 
 	ref_line = np.array([])
-	for n in xrange(line.shape[0]-1):
+	for n in range(line.shape[0]-1):
 		xi, xf = line[n], line[n+1]
 		xref = np.linspace(xi,xf,nref)
 		ref_line = np.append(ref_line, xref)
@@ -489,10 +489,10 @@ def get_mask_from_poly(xp, yp, poly, verbose=False):
 	print('Building the polygon mask...')
 	jmax, imax = xp.shape
 	mask = np.zeros((jmax,imax))
-	for j in xrange(jmax):
+	for j in range(jmax):
 		if verbose:
 			print("Row %s of %s"%(j+1,jmax))
-		for i in xrange(imax):
+		for i in range(imax):
 			px, py = xp[j,i], yp[j,i]
 			# Test if this point is within the polygon.
 			mask[j,i] = point_in_poly(px, py, poly)
@@ -518,7 +518,7 @@ def sphericalpolygon_area(lons, lats, R=6371000.):
 	N = lons.size
 
 	angles = np.empty(N)
-	for i in xrange(N):
+	for i in range(N):
 
 	    phiB1, phiA, phiB2 = np.roll(lats, i)[:3]
 	    LB1, LA, LB2 = np.roll(lons, i)[:3]
@@ -636,7 +636,7 @@ def weim(x, N, kind='hann', badflag=-9999, beta=14):
 	fbad=x==badflag
 	x[fbad] = np.nan
 
-	for i in xrange(lx):
+	for i in range(lx):
 		if i <= ln:
 			xx = x[:ln+i+1]
 			ww = w[ln-i:]
@@ -743,8 +743,8 @@ def smoo2(A, hei, wid, kind='hann', badflag=-9999, beta=14):
 	imax, jmax = A.shape
 	As = np.nan*np.ones( (imax, jmax) )
 
-	for i in xrange(imax):
-		for j in xrange(jmax):
+	for i in range(imax):
+		for j in range(jmax):
 			### Default window parameters.
 			wupp = 0
 			wlow = hei
@@ -967,7 +967,7 @@ def get_isobath(lon, lat, topo, iso):
 	## This is assumed to be the wanted isobath.
 	ncoll = len(coll.get_paths())
 	siz = np.array([])
-	for n in xrange(ncoll):
+	for n in range(ncoll):
 		path = coll.get_paths()[n]
 		siz = np.append(siz, path.vertices.shape[0])
 
@@ -1006,14 +1006,14 @@ def angle_isobath(lon, lat, h, isobath=100., smooth_isobath=True, window_length=
     ## zonal axis, using points k+1 and k.
     shth = yiso.size-1
     theta = np.zeros(shth)
-    for k in xrange(shth):
+    for k in range(shth):
         dyk = R*(yiso[k+1]-yiso[k])
         dxk = R*(xiso[k+1]-xiso[k])*np.cos(yiso[k]*deg2rad)
         theta[k] = np.arctan2(dyk,dxk)
 
     if smooth_isobath:
         thetasm = np.zeros(shth)
-        for k in xrange(shth):
+        for k in range(shth):
             dyk = R*(yisosm[k+1]-yisosm[k])
             dxk = R*(xisosm[k+1]-xisosm[k])*np.cos(yisosm[k]*deg2rad)
             thetasm[k] = np.arctan2(dyk,dxk)
@@ -1063,8 +1063,8 @@ def isopyc_depth(z, dens0, isopyc=1027.75, dzref=1.):
         dens0 = np.ma.filled(dens0, np.nan)
 
     hisopyc = np.nan*np.ones((ny,nx))
-    for j in xrange(ny):
-        for i in xrange(nx):
+    for j in range(ny):
+        for i in range(nx):
             dens0ij = dens0[:,j,i]
             if np.logical_or(np.logical_or(isopyc<np.nanmin(dens0ij), np.nanmax(dens0ij)<isopyc), np.isnan(dens0ij).all()):
                 continue
