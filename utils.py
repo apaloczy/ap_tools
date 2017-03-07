@@ -20,6 +20,7 @@ __all__ = ['flowfun',
            'denan',
            'standardize',
            'linear_trend',
+           'thomas',
            'point_in_poly',
            'get_mask_from_poly',
            'sphericalpolygon_area',
@@ -33,11 +34,9 @@ __all__ = ['flowfun',
            'isopyc_depth',
 		   'whiten_zero',
            'wind2stress',
-           'maxwindow',
            'gen_dates',
            'fmt_isobath',
            'float2latex',
-           'extract_npz',
            'mat2npz',
            'bb_map',
            'dots_dualcolor']
@@ -455,7 +454,7 @@ def point_in_poly(x,y,poly):
 	returns True or False.  The algorithm is called
 	'Ray Casting Method'.
 
-	Taken from http://pseentertainmentcorp.com/smf/index.php?topic=545.0
+	Source: http://pseentertainmentcorp.com/smf/index.php?topic=545.0
 	"""
 	n = len(poly)
 	inside = False
@@ -854,19 +853,39 @@ def linear_trend(series, return_line=True):
 	else:
 		return b, a, x
 
-def maxwindow():
-	"""
-	Maximizes current window.
-	"""
-	backend = matplotlib.backends.backend
-	mng = plt.get_current_fig_manager()
+def thomas(A, b):
+    """
+    USAGE
+    -----
+    x = thomas(A,b)
 
-	if backend=='TkAgg':                  # Tk window manager.
-		mng.resize(*mng.window.maxsize())
-	elif backend=='WXAgg':                # Wx window manager.
-		mng.frame.Maximize(True)
-	elif backend=='QT4Agg':               # Qt window manager.
-		mng.window.showMaximized()
+    Solve Ax = b (where A is a tridiagonal matrix)
+    using the Thomas Algorithm.
+
+    References
+    ----------
+    For a step-by-step derivation of the algorithm, see
+    e.g., http://www3.ul.ie/wlee/ms6021_thomas.pdf
+    """
+    # Step 1: Sweep rows from top to bottom,
+    # calculating gammas and rhos along the way.
+    N = b.size
+    gam = [float(A[0,1]/A[0,0])]
+    rho = [float(b[0]/A[0,0])]
+    for i in range(0, N):
+        rho.append(float((b[i] - A[i,i-1]*rho[-1])/(A[i,i] - A[i,i-1]*gam[-1])))
+        if i<N-1: # No gamma in the last row.
+            gam.append(float(A[i,i+1]/(A[i,i] - A[i,i-1]*gam[-1])))
+
+    # Step 2: Substitute solutions for unknowns
+    # starting from the bottom row all the way up.
+    x = [] # Vector of unknowns.
+    x.append(rho.pop()) # Last row is already solved.
+    for i in range(N-2, -1, -1):
+        x.append(float(rho.pop() - gam.pop()*x[-1]))
+
+    x.reverse()
+    return np.array(x)
 
 def topo_slope(lon, lat, h):
 	"""
@@ -1207,21 +1226,6 @@ def float2latex(f, ndigits=1):
 	base, exponent = float_str.split("e")
 	return "${0} \times 10^{{{1}}}$".format(base, int(exponent))
 
-def extract_npz(fname):
-	"""
-	USAGE
-	-----
-	varlist = extract_npz(fname)
-
-	Extract variables stored in a .npz file,
-	and returns them in a list.
-	"""
-	d = np.load(fname)
-	arrs = []
-	for arr in d.iterkeys():
-		exec("arrs.append(d['%s'])"%arr)
-	return arrs
-
 def mat2npz(matname):
 	"""
 	USAGE
@@ -1239,7 +1243,7 @@ def mat2npz(matname):
 	np.savez(npzname,**d)
 	return None
 
-def bb_map(lons, lats, projection='merc', resolution='i', drawparallels=True, drawmeridians=True, ax=plt.gca()):
+def bb_map(lons, lats, ax, projection='merc', resolution='i', drawparallels=True, drawmeridians=True):
 	"""
 	USAGE
 	-----
