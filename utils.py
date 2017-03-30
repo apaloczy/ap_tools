@@ -330,28 +330,41 @@ def bbox2ij(lon, lat, bbox=[-135., -85., -76., -64.], FIX_IDL=True):
     else:
         return i0, i1, j0, j1
 
-def near(x, x0, npts=1):
+def near(x, x0, npts=1, return_index=False):
     """
     USAGE
     -----
-    xnear = near(x, x0, npts=1)
+    xnear = near(x, x0, npts=1, return_index=False)
 
     Finds 'npts' points (defaults to 1) in array 'x'
     that are closest to a specified 'x0' point.
+    If 'return_index' is True (defauts to False),
+    then the indices of the closest points. The
+    indices are ordered in order of closeness.
     """
     x = list(x)
     xnear = []
+    xidxs = []
     for n in range(npts):
         idx = np.nanargmin(np.abs(np.array(x)-x0))
         xnear.append(x.pop(idx))
+        if return_index:
+            xidxs.append(idx)
+    if return_index: # Sort indices according to the proximity of wanted points.
+        xidxs = [xidxs[i] for i in np.argsort(xnear).tolist()]
     xnear.sort()
 
     if npts==1:
         xnear = xnear[0]
+        if return_index:
+            xidxs = xidxs[0]
     else:
         xnear = np.array(xnear)
 
-    return xnear
+    if return_index:
+        return xidxs
+    else:
+        return xnear
 
 def near2(x, y, x0, y0, npts=1):
     """
