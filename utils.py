@@ -367,14 +367,16 @@ def near(x, x0, npts=1, return_index=False):
     else:
         return xnear
 
-def near2(x, y, x0, y0, npts=1):
+def near2(x, y, x0, y0, npts=1, return_index=False):
     """
     USAGE
     -----
-    xnear, ynear = near(x, y, x0, y0, npts=1)
+    xnear, ynear = near(x, y, x0, y0, npts=1, return_index=False)
 
     Finds 'npts' points (defaults to 1) in arrays 'x' and 'y'
-    that are closest to a specified '(x0, y0)' point.
+    that are closest to a specified '(x0, y0)' point. If
+    'return_index' is True (defauts to False), then the
+    indices of the closest points are returned.
 
     Example
     -------
@@ -386,26 +388,31 @@ def near2(x, y, x0, y0, npts=1):
     >>> print("(x0, y0) = (%f, %f)"%(x0, y0))
     >>> print("(xn, yn) = (%f, %f)"%(xn, yn))
     """
-    x, y = map(np.asanyarray, (x, y))
+    x, y = map(np.array, (x, y))
+    shp = x.shape
 
-    xnear, ynear = [], []
+    xynear = []
+    xyidxs = []
+    dx = x - x0
+    dy = y - y0
+    dr = dx**2 + dy**2
     for n in range(npts):
-        dx = np.array(x) - x0
-        dy = np.array(y) - y0
-        dr = dx**2 + dy**2
-        idx = np.where(dr==np.nanmin(dr))
-        xidx, yidx = idx[0][0], idx[1][0]
-        xnear.append(x[xidx,yidx])
-        ynear.append(y[xidx,yidx])
-        x[xidx,yidx] = np.nan
-        y[xidx,yidx] = np.nan
+        xyidx = unravel_index(np.nanargmin(dr), dims=shp)
+        if return_index:
+            xyidxs.append(xyidx)
+        xyn = (x[xyidx], y[xyidx])
+        xynear.append(xyn)
+        dr[xyidx] = np.nan
 
     if npts==1:
-        xnear, ynear  = xnear[0], ynear[0]
-    else:
-        xnear, ynear = map(np.array, (xnear, ynear))
+        xynear = xynear[0]
+        if return_index:
+            xyidxs = xyidxs[0]
 
-    return xnear, ynear
+    if return_index:
+        return xyidxs
+    else:
+        return xynear
 
 def mnear(x, y, x0, y0):
 	"""
