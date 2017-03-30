@@ -339,8 +339,9 @@ def near(x, x0, npts=1, return_index=False):
     Finds 'npts' points (defaults to 1) in array 'x'
     that are closest to a specified 'x0' point.
     If 'return_index' is True (defauts to False),
-    then the indices of the closest points. The
-    indices are ordered in order of closeness.
+    then the indices of the closest points are
+    returned. The indices are ordered in order of
+    closeness.
     """
     x = list(x)
     xnear = []
@@ -391,7 +392,7 @@ def near2(x, y, x0, y0, npts=1):
     for n in range(npts):
         dx = np.array(x) - x0
         dy = np.array(y) - y0
-        dr = np.sqrt(dx**2 + dy**2)
+        dr = dx**2 + dy**2
         idx = np.where(dr==np.nanmin(dr))
         xidx, yidx = idx[0][0], idx[1][0]
         xnear.append(x[xidx,yidx])
