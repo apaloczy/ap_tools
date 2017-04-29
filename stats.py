@@ -19,6 +19,7 @@ __all__ = ['gauss_curve',
 		   'autocorr',
 		   'Tdecorr',
 		   'Neff',
+		   'lnsmc',
 		   'ci_mean',
 		   'rsig',
 		   'rsig_student',
@@ -30,6 +31,7 @@ import matplotlib.pyplot as plt
 from scipy.special import erfinv, betainc, betaincinv
 from scipy.stats.distributions import norm
 from scipy.stats.distributions import t as student
+from ap_tools.utils import near
 try:
 	from scikits import bootstrap
 except:
@@ -345,6 +347,109 @@ def Neff(Tdecorr, N, dt=1.):
 	print("Neff = %.2f"%neff)
 
 	return neff
+
+def lnsmc(xvar, func, *args, nmc=10000, alpha=0.95, nbins=100, plot_pdf=False, verbose=True):
+	"""
+	USAGE
+	-----
+	yvar_err, Yvar_mc = lnsmc(xvar, func, *args, nmc=10000, alpha=0.95, nbins=100, plot_pdf=True, verbose=True)
+
+	Runs 'nmc' (defaults to 10000) Monte Carlo simulations and calculates the
+	standard error propagated from the given variable 'xvar' (assumed to be
+	normally-distributed) to a derived variable 'yvar', such that
+
+	yvar = func(xvar),
+
+	where 'func' is the specified function relating the two variables.
+	'args' is a tuple containing the additional input arguments required
+	by 'func', if any.
+
+	The propagated standard error is calculated by numerically integrating
+	the PDF of the simulated 'yvar' to estimate its CDF, and finding the
+	percentile associated with an 'alpha' confidence level (defaults to 0.95).
+
+	If 'xvar' is a single number, take it is assumed to be the prescribed
+	standard deviation of 'xvar', i.e., like a nominal instrumental error
+	of a sensor.
+
+	'func' is a callable that takes the source variable and outputs the
+	derived variable, which is the variable we want to propagate the error to.
+	'nbins' is the number of bins to be used for integrating the CDF.
+	'plot_pdf' Determines whether or not to plot the PDF of the simulated
+	derived variable (defaults to False).
+	"""
+	assert callable(func), "'func' is not a function."
+	xvar = np.array(xvar)
+
+	Yvar_mc = []
+	# If 'xvar' is a single number, take it to be
+	# the assumed standard deviation of 'xvar', i.e.,
+	# like a nominal instrumental error of a sensor.
+	if xvar.size>1:
+		xvar = np.array(xvar)
+		N = xvar.size
+		xvar_mean = xvar.mean()
+		xvar_std = xvar.std()
+	else:
+		N = 1
+		xvar_mean = 0.
+		xvar_std = xvar
+
+	for n in range(nmc):
+		if verbose:
+			print("Monte Carlo simulation %d of %d"%(n+1,nmc))
+		# Generate two random normal time series.
+		xvar_mc = xvar_std*np.random.randn(N) + xvar_mean
+		# Calculate derived variable with the random data.
+		Yvar_mc.append(func(xvar_mc, *args))
+
+	# Calculate PDF and CDF of the simulated data.
+	fig, ax = plt.subplots()
+	yvar_n, bins, _ = ax.hist(np.array(Yvar_mc).ravel(), bins=nbins, normed=True, color='b', histtype='bar')
+
+	# Calculate and plot CDF.
+	dbin = bins[1:] - bins[:-1]
+	cdf = np.cumsum(yvar_n*dbin) # CDF [unitless].
+	binm = 0.5*(bins[1:] + bins[:-1])
+	binm = np.insert(binm, 0, 0)
+	cdf = np.insert(cdf, 0, 0)
+	# cdfnear_alpha = near(cdf, alpha)
+	# fci_alpha = np.where(cdf==cdfnear_alpha)[0][0]
+	fci_alpha = near(cdf, alpha, return_index=True)
+
+	# Value of the Monte Carlo derived variable associated with the alpha*100 percentile.
+	yvar_err = binm[fci_alpha]
+
+	if plot_pdf:
+		ax2 = ax.twinx()
+		ax2.plot(binm, cdf, 'k', linewidth=3.0)
+		ax2.axhline(y=alpha, linewidth=1.5, linestyle='dashed', color='grey')
+		ax2.axvline(x=yvar_err, linewidth=1.5, linestyle='dashed', color='grey')
+		ax.grid()
+		ax.set_ylabel(r'Probability density', fontsize=18, fontweight='black')
+		ax2.set_ylabel(r'Cumulative probability', fontsize=18, fontweight='black')
+		ax.set_xlabel(r'Derived variable', fontsize=18, fontweight='black')
+		ytks = ax2.get_yticks()
+		ytks = np.append(ytks, alpha)
+		ytks.sort()
+		ytks = ax2.set_yticks(ytks)
+		fig.canvas.draw()
+		plt.show()
+	else:
+		plt.close()
+
+	# Error is symmetric about zero, because the
+	# derived variable is assumed to be normal.
+	yvar_err = yvar_err/2.
+	if verbose:
+		print("The Monte Carlo error for the derived variable is +-%.2f (alpha=%.2f)"%(yvar_err, alpha))
+	# Also return the values of the derived variable for
+	# all Monte Carlo simulations.
+	#
+	# yvar_err is the envelope containing 100*'alpha' % of the values
+	# of the simulated derived variable. So the error bars
+	# are +-yvar_err/2 (symmetric about each data point).
+	return yvar_err, Yvar_mc
 
 def ci_mean(m_sample, s_sample, ndof_eff, alpha=0.95, verbose=True):
 	"""
