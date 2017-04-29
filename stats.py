@@ -368,13 +368,13 @@ def lnsmc(xvar, func, *args, nmc=10000, alpha=0.95, nbins=100, plot_pdf=False, v
 	the PDF of the simulated 'yvar' to estimate its CDF, and finding the
 	percentile associated with an 'alpha' confidence level (defaults to 0.95).
 
-	If 'xvar' is a single number, take it is assumed to be the prescribed
+	If 'xvar' is a single number, it is assumed to be the prescribed
 	standard deviation of 'xvar', i.e., like a nominal instrumental error
 	of a sensor.
 
 	'func' is a callable that takes the source variable and outputs the
 	derived variable, which is the variable we want to propagate the error to.
-	'nbins' is the number of bins to be used for integrating the CDF.
+	'nbins' is the number of bins to be used for integrating the PDF.
 	'plot_pdf' Determines whether or not to plot the PDF of the simulated
 	derived variable (defaults to False).
 	"""
@@ -383,8 +383,8 @@ def lnsmc(xvar, func, *args, nmc=10000, alpha=0.95, nbins=100, plot_pdf=False, v
 
 	Yvar_mc = []
 	# If 'xvar' is a single number, take it to be
-	# the assumed standard deviation of 'xvar', i.e.,
-	# like a nominal instrumental error of a sensor.
+	# a prescribed standard deviation for 'xvar', e.g.,
+	# like the instrumental error of a sensor.
 	if xvar.size>1:
 		xvar = np.array(xvar)
 		N = xvar.size
