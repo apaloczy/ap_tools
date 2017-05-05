@@ -10,6 +10,7 @@ from __future__ import division
 __all__ = ['flowfun',
            'cumsimp',
            'rot_vec',
+           'avgdir',
            'lon180to360',
            'lon360to180',
            'bbox2ij',
@@ -231,6 +232,39 @@ def rot_vec(u, v, angle=-45, degrees=True):
 	v_rot = -u*np.sin(angle) + v*np.cos(angle) # Usually the along-shore component.
 
 	return u_rot,v_rot
+
+def avgdir(dirs, degrees=False, axis=None):
+    """
+    USAGE
+    -----
+    dirm = avgdir(dirs, degrees=False, axis=None)
+
+    Calculate the mean direction of an array of directions 'dirs'.
+    If 'degrees' is 'False' (default), the input directions must be
+    in radians. If 'degrees' is 'True', the input directions must be
+    in degrees.
+
+    The direction angle is measured from the ZONAL axis, i.e.,
+    (0, 90, -90) deg are (Eastward, Northward, Southward).
+    180 and -180 deg are both Westward.
+
+    If 'axis' is 'None' (default) the mean is calculated on the
+    flattened array. Otherwise, 'axis' is the index of the axis
+    to calculate the mean over.
+    """
+    dirs = np.array(dirs)
+
+    if degrees:
+        dirs = dirs*np.pi/180 # Degrees to radians.
+
+    uxs = np.cos(dirs)
+    vys = np.sin(dirs)
+    dirm = np.arctan2(vys.sum(axis=axis), uxs.sum(axis=axis))
+
+    if degrees:
+        dirm = dirm*180/np.pi # From radians to degrees.
+
+    return dirm
 
 def lon180to360(lon):
 	"""
