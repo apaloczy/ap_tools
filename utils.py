@@ -405,12 +405,12 @@ def near2(x, y, x0, y0, npts=1, return_index=False):
     """
     USAGE
     -----
-    xnear, ynear = near(x, y, x0, y0, npts=1, return_index=False)
+    xnear, ynear = near2(x, y, x0, y0, npts=1, return_index=False)
 
     Finds 'npts' points (defaults to 1) in arrays 'x' and 'y'
     that are closest to a specified '(x0, y0)' point. If
     'return_index' is True (defauts to False), then the
-    indices of the closest points are returned.
+    indices of the closest point(s) are returned.
 
     Example
     -------
