@@ -177,15 +177,17 @@ class MUR_data(object):
     -----
     mur = MUR_data(filename)
 
-    A simple container class for MUR data (http://mur.jpl.nasa.gov/).
+    A simple container class for MUR SST data (http://mur.jpl.nasa.gov/).
     """
     def __init__(self, filename):
         self.ncfile = Dataset(filename)
         self.varlist = list(self.ncfile.variables)
         self.lon = self.ncfile.variables['lon'][:]
         self.lat = self.ncfile.variables['lat'][:]
+        t = self.ncfile.variables['time']
+        self.time = num2date(t[:], units=t.units)
         self.sst = self.ncfile.variables['analysed_sst'][:]
         self.ncfile.close()
         self.x, self.y = np.meshgrid(self.lon, self.lat)
         self.sst = self.sst.squeeze()
-        self.sst -= 273.15
+        self.sst -= 273.15 # K to degrees C.
