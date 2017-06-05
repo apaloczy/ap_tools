@@ -1,11 +1,6 @@
-# -*- coding: utf-8 -*-
-#
-# Description: Loose scripts and functions for personal use.
-#
+# Description: Loose functions for personal use.
 # Author:      André Palóczy
 # E-mail:      paloczy@gmail.com
-
-from __future__ import division
 
 __all__ = ['flowfun',
            'cumsimp',
