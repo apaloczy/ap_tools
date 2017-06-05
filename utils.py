@@ -9,6 +9,7 @@ __all__ = ['flowfun',
            'lon180to360',
            'lon360to180',
            'bbox2ij',
+           'get_arrdepth',
            'near',
            'near2',
            'mnear',
@@ -358,6 +359,31 @@ def bbox2ij(lon, lat, bbox=[-135., -85., -76., -64.], FIX_IDL=True):
         return (i0, Il, j0, j1), (Ir, i1, j0, j1)
     else:
         return i0, i1, j0, j1
+
+def get_arrdepth(arr):
+    """
+    USAGE
+    -----
+    arr_depths = get_arrdepth(arr)
+
+    Determine number of nested levels in each
+    element of an array of arrays of arrays
+    (or other array-like objects).
+    """
+    all_nlevs = []
+    for i in range(arr.size):
+        nlev=0
+        wrk_arr = arr[i]
+        while np.size(wrk_arr)>0:
+            try:
+                wrk_arr = np.array(wrk_arr[i])
+            except Exception:
+                all_nlevs.append(nlev)
+                nlev=0
+                break
+            nlev+=1
+
+    return all_nlevs
 
 def near(x, x0, npts=1, return_index=False):
     """
