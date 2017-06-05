@@ -1,4 +1,4 @@
-# Description: Loose functions for personal use.
+# Description: General-purpose functions for personal use.
 # Author:      André Palóczy
 # E-mail:      paloczy@gmail.com
 
