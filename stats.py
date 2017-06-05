@@ -1,14 +1,6 @@
-# -*- coding: utf-8 -*-
-#
-# Description: Loose functions to perform statistical calculations.
-#              These functions were written partly for study purposes
-#              and are probably available in other modules in a more
-#              efficient form.
-#
+# Description: Functions to perform statistical calculations.
 # Author:      André Palóczy
 # E-mail:      paloczy@gmail.com
-
-from __future__ import division
 
 __all__ = ['gauss_curve',
 		   'principal_ang',

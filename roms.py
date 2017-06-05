@@ -1,9 +1,4 @@
-# -*- coding: utf-8 -*-
-#
-# Description: Loose scripts and functions to manipulate ROMS fileds.
-#              works with the 'romslab' (https://github.com/rsoutelino/romslab)
-#              and 'pyroms' (https://github.com/kshedstrom/pyroms) modules.
-#
+# Description: Functions to manipulate ROMS fileds.
 # Author:      André Palóczy
 # E-mail:      paloczy@gmail.com
 

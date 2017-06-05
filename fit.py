@@ -1,13 +1,7 @@
-# -*- coding: utf-8 -*-
-#
 # Description: Functions to fit statistical models to data series.
-#              These functions were written partly for study purposes
-#              and are probably available in other modules in a more efficient form.
-#
 # Author:      André Palóczy
 # E-mail:      paloczy@gmail.com
-
-from __future__ import division
+# Description: Functions to fit statistical models to data series.
 
 __all__ = ['sinfitn']
 

@@ -1,7 +1,4 @@
-# -*- coding: utf-8 -*-
-#
-# Description: Coursework-related scripts.
-#
+# Description: Loose functions used for studying.
 # Author:      André Palóczy
 # E-mail:      paloczy@gmail.com
 

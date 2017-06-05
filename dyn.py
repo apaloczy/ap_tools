@@ -1,11 +1,6 @@
-# -*- coding: utf-8 -*-
-#
-# Description: Functions to calculate common dynamical quantities.
-#
+# Description: Functions to calculate dynamical quantities.
 # Author:      André Palóczy
 # E-mail:      paloczy@gmail.com
-
-from __future__ import division
 
 __all__ = ['deg2m_dist',
            'divergence',

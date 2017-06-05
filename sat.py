@@ -1,7 +1,4 @@
-# -*- coding: utf-8 -*-
-#
 # Description: Utilities to work with satellite data.
-#
 # Author:      André Palóczy
 # E-mail:      paloczy@gmail.com
 
