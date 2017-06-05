@@ -1,12 +1,6 @@
-# -*- coding: utf-8 -*-
-#
-# Description: Utilities to work with datasets, mostly
-#              for local, personal use.
-#
+# Description: Functions to work with datasets.
 # Author:      André Palóczy
 # E-mail:      paloczy@gmail.com
-#
-# Obs:
 
 __all__ = ['topo_subset',
            'get_indices']
