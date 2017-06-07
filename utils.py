@@ -367,9 +367,11 @@ def get_arrdepth(arr):
     arr_depths = get_arrdepth(arr)
 
     Determine number of nested levels in each
-    element of an array of arrays of arrays
+    element of an array of arrays of arrays...
     (or other array-like objects).
     """
+    arr = np.array(arr) # Make sure first level is an array.
+
     all_nlevs = []
     for i in range(arr.size):
         nlev=0
@@ -383,7 +385,7 @@ def get_arrdepth(arr):
                 break
             nlev+=1
 
-    return all_nlevs
+    return np.array(all_nlevs)
 
 def near(x, x0, npts=1, return_index=False):
     """
