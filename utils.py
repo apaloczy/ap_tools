@@ -10,6 +10,7 @@ __all__ = ['flowfun',
            'lon360to180',
            'bbox2ij',
            'get_arrdepth',
+           'fpointsbox',
            'near',
            'near2',
            'mnear',
@@ -386,6 +387,33 @@ def get_arrdepth(arr):
             nlev+=1
 
     return np.array(all_nlevs)
+
+def fpointsbox(x, y, fig, ax, nboxes=1, plot=True):
+    """
+    USAGE
+    -----
+    fpts = fpointsbox(x, y, fig, ax, nboxes=1, plot=True)
+
+    Find points in a rectangle made with 2 ginput points.
+    """
+    fpts = np.array([])
+    for n in range(nboxes):
+        box = np.array(fig.ginput(n=2, timeout=0))
+        xb, yb = box[:,0], box[:,1]
+        xl, xr, yd, yu = xb.min(), xb.max(), yb.min(), yb.max()
+        xbox = np.array([xl, xr, xr, xl, xl])
+        ybox = np.array([yd, yd, yu, yu, yd])
+        fxbox, fybox = np.logical_and(x>xl, x<xr), np.logical_and(y>yd, y<yu)
+        fptsi = np.logical_and(fxbox, fybox)
+        fpts = np.append(fpts, fptsi)
+        if plot:
+            ax.plot(xbox, ybox, 'r', linestyle='solid', marker='o', ms=4)
+            ax.plot(x[fptsi], y[fptsi], 'r', linestyle='none', marker='+', ms=5)
+            fig.show()
+        else:
+            fig.close()
+
+    return fpts
 
 def near(x, x0, npts=1, return_index=False):
     """
