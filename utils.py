@@ -9,6 +9,7 @@ __all__ = ['flowfun',
            'lon180to360',
            'lon360to180',
            'bbox2ij',
+           'xy2dist',
            'get_arrdepth',
            'fpointsbox',
            'near',
@@ -52,6 +53,9 @@ from glob import glob
 from netCDF4 import Dataset, num2date
 from pandas import Panel
 from gsw import distance
+from pygeodesy import Datums, VincentyError
+from pygeodesy.ellipsoidalVincenty import LatLon as LatLon
+from pygeodesy.sphericalNvector import LatLon as LatLon_sphere
 
 def flowfun(x, y, u, v, variable='psi', geographic=True):
 	"""
@@ -360,6 +364,36 @@ def bbox2ij(lon, lat, bbox=[-135., -85., -76., -64.], FIX_IDL=True):
         return (i0, Il, j0, j1), (Ir, i1, j0, j1)
     else:
         return i0, i1, j0, j1
+
+def xy2dist(x, y, cyclic=False, datum='WGS84'):
+    """
+    USAGE
+    -----
+    d = xy2dist(x, y, cyclic=False, datum='WGS84')
+
+    Calculates a distance axis from a line defined by longitudes and latitudes
+    'x' and 'y', using either the Vicenty formulae on an ellipsoidal earth
+    (ellipsoid defaults to WGS84) or on a sphere (if datum=='Sphere').
+
+    Example
+    -------
+    >>> yi, yf = -23.550520, 32.71573800
+    >>> xi, xf = -46.633309, -117.161084
+    >>> x, y = np.linspace(xi, xf), np.linspace(yi, yf)
+    >>> d_ellipse = xy2dist(x, y, datum='WGS84')[-1]*1e-3            # [km].
+    >>> d_sphere = xy2dist(x, y, datum='Sphere')[-1]*1e-3            # [km].
+    >>> dd = np.abs(d_ellipse - d_sphere)
+    >>> dperc = 100*dd/d_ellipse
+    >>> msg = 'Difference of %.1f km over a %.0f km-long line (%.3f %% difference)'%(dd, d_ellipse, dperc)
+    >>> print(msg)
+    """
+    if datum is not 'Sphere':
+        xy = [LatLon(y0, x0, datum=Datums[datum]) for x0, y0 in zip(x, y)]
+    else:
+        xy = [LatLon_sphere(y0, x0) for x0, y0 in zip(x, y)]
+    d = np.array([xy[n].distanceTo(xy[n+1]) for n in range(len(xy)-1)])
+
+    return np.append(0, np.cumsum(d))
 
 def get_arrdepth(arr):
     """
