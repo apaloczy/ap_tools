@@ -49,9 +49,10 @@ from mpl_toolkits.basemap import Basemap
 from datetime import datetime,timedelta
 from dateutil import rrule,parser
 from scipy.io import loadmat,savemat
+from scipy.signal import savgol_filter
 from glob import glob
 from netCDF4 import Dataset, num2date
-from pandas import Panel
+from pandas import rolling_window
 from gsw import distance
 from pygeodesy import Datums, VincentyError
 from pygeodesy.ellipsoidalVincenty import LatLon as LatLon
@@ -422,11 +423,11 @@ def get_arrdepth(arr):
 
     return np.array(all_nlevs)
 
-def fpointsbox(x, y, fig, ax, nboxes=1, plot=True):
+def fpointsbox(x, y, fig, ax, nboxes=1, plot=True, return_index=True):
     """
     USAGE
     -----
-    fpts = fpointsbox(x, y, fig, ax, nboxes=1, plot=True)
+    fpts = fpointsbox(x, y, fig, ax, nboxes=1, plot=True, return_index=True)
 
     Find points in a rectangle made with 2 ginput points.
     """
@@ -439,6 +440,8 @@ def fpointsbox(x, y, fig, ax, nboxes=1, plot=True):
         ybox = np.array([yd, yd, yu, yu, yd])
         fxbox, fybox = np.logical_and(x>xl, x<xr), np.logical_and(y>yd, y<yu)
         fptsi = np.logical_and(fxbox, fybox)
+        if return_index:
+            fptsi = np.where(fptsi)[0]
         fpts = np.append(fpts, fptsi)
         if plot:
             ax.plot(xbox, ybox, 'r', linestyle='solid', marker='o', ms=4)
@@ -1106,63 +1109,89 @@ def curvature_geometric(x, y):
 
 	return np.squeeze(k)
 
-def get_isobath(lon, lat, topo, iso):
-	"""
-	USAGE
-	-----
-	lon_isob, lat_isob = get_isobath(lon_topo, lat_topo, topo, iso)
-
-	Retrieves the 'lon_isob','lat_isob' coordinates of a wanted 'iso'
-	isobath from a topography array 'topo', with 'lon_topo','lat_topo'
-	coordinates.
-	"""
-	lon, lat, topo = map(np.asanyarray, (lon, lat, topo))
-
-	plt.ioff()
-	fig, ax = plt.subplots()
-	cs = ax.contour(lon, lat, topo, [iso])
-	coll = cs.collections[0]
-	## Test all lines to find thel ongest one.
-	## This is assumed to be the wanted isobath.
-	ncoll = len(coll.get_paths())
-	siz = np.array([])
-	for n in range(ncoll):
-		path = coll.get_paths()[n]
-		siz = np.append(siz, path.vertices.shape[0])
-
-	f = siz.argmax()
-	xiso = coll.get_paths()[f].vertices[:, 0]
-	yiso = coll.get_paths()[f].vertices[:, 1]
-	del(fig, ax, cs)
-	plt.ion()
-
-	return xiso, yiso
-
-def angle_isobath(lon, lat, h, isobath=100., smooth_isobath=True, window_length=21, plot_map=False):
+def get_isobath(lon, lat, topo, iso, cyclic=False, smooth_isobath=False, window_length=21, win_type='barthann', **kw):
     """
     USAGE
     -----
-    lon_isob, lat_isob, angle = angle_isobath(lon, lat, h, isobath=100., smooth_isobath=True, window_length=21, plot_map=False)
+    lon_isob, lat_isob = get_isobath(lon, lat, topo, iso, cyclic=False, smooth_isobath=False, window_length=21, win_type='barthann', **kw)
 
-    Returns the coordinates ('lon_isob', 'lat_isob') and the angle an isobath (defaults to the 100 m isobath)
-    makes with the zonal direction for a topography array 'h' at coordinates ('lon', 'lat'). If 'smooth_isobath'==True,
-    smooths the isobath with a Hanning window that is 'window_length' points wide. If 'plot_map'==True, plots a map showing
+    Retrieves the 'lon_isob','lat_isob' coordinates of a wanted 'iso'
+    isobath from a topography array 'topo', with 'lon_topo','lat_topo'
+    coordinates.
+    """
+    lon, lat, topo = map(np.array, (lon, lat, topo))
+
+    fig, ax = plt.subplots()
+    cs = ax.contour(lon, lat, topo, [iso])
+    coll = cs.collections[0]
+    ## Test all lines to find thel ongest one.
+    ## This is assumed to be the wanted isobath.
+    ncoll = len(coll.get_paths())
+    siz = np.array([])
+    for n in range(ncoll):
+        path = coll.get_paths()[n]
+        siz = np.append(siz, path.vertices.shape[0])
+
+    f = siz.argmax()
+    xiso = coll.get_paths()[f].vertices[:, 0]
+    yiso = coll.get_paths()[f].vertices[:, 1]
+    plt.close()
+
+    # Smooth the isobath with a moving window.
+    # Periodize according to window length to avoid losing edges.
+    if smooth_isobath:
+        fleft = window_length//2
+        fright = -window_length//2 + 1
+        if cyclic:
+            xl = xiso[:fleft] + 360
+            xr = xiso[fright:] - 360
+            yl = yiso[:fleft]
+            yr = yiso[fright:]
+            xiso = np.concatenate((xr, xiso, xl))
+            yiso = np.concatenate((yr, yiso, yl))
+            xiso = rolling_window(xiso, window=window_length, win_type=win_type, center=True, **kw)[fleft:fright]
+            yiso = rolling_window(yiso, window=window_length, win_type=win_type, center=True, **kw)[fleft:fright]
+        else:
+            xiso = rolling_window(xiso, window=window_length, win_type=win_type, center=True, **kw)
+            yiso = rolling_window(yiso, window=window_length, win_type=win_type, center=True, **kw)
+
+    return xiso, yiso
+
+def angle_isobath(lon, lat, h, isobath=100, cyclic=False, smooth_isobath=True, window_length=21, win_type='barthann', plot_map=False, **kw):
+    """
+    USAGE
+    -----
+    lon_isob, lat_isob, angle = angle_isobath(lon, lat, h, isobath=100, cyclic=False, smooth_isobath=True, window_length=21, win_type='barthann', plot_map=False, **kw)
+
+    Returns the coordinates ('lon_isob', 'lat_isob') and the angle an isobath
+    makes with the zonal direction for a topography array 'h' at coordinates
+    ('lon', 'lat'). Defaults to the 100 m isobath.
+
+    If 'smooth_isobath'==True, smooths the isobath with a rolling window of type
+    'win_type' and 'window_length' points wide.
+    All keyword arguments are passed to 'pandas.rolling_window()'.
+
+    If 'plot_map'==True, plots a map showing
     the isobath (and its soothed version if smooth_isobath==True).
     """
-    lon, lat, h = map(np.asanyarray, (lon, lat, h))
+    lon, lat, h = map(np.array, (lon, lat, h))
     R = 6371000.0 # Mean radius of the earth in meters (6371 km), from gsw.constants.earth_radius.
     deg2rad = np.pi/180. # [rad/deg]
 
-    ## Extract isobath coordinates
+    # Extract isobath coordinates
     xiso, yiso = get_isobath(lon, lat, h, isobath)
 
-    ## Smooth the isobath.
-    if smooth_isobath:
-        xisosm = weim(xiso, window_length, kind='hann')
-        yisosm = weim(yiso, window_length, kind='hann')
+    if cyclic: # Add cyclic point.
+        xiso = np.append(xiso, xiso[0])
+        yiso = np.append(yiso, yiso[0])
 
-    ## From the coordinates of the isobath, find the angle it forms with the
-    ## zonal axis, using points k+1 and k.
+    # Smooth the isobath with a moving window.
+    if smooth_isobath:
+        xiso = rolling_window(xiso, window=window_length, win_type=win_type, **kw)
+        yiso = rolling_window(yiso, window=window_length, win_type=win_type, **kw)
+
+    # From the coordinates of the isobath, find the angle it forms with the
+    # zonal axis, using points k+1 and k.
     shth = yiso.size-1
     theta = np.zeros(shth)
     for k in range(shth):
@@ -1170,35 +1199,18 @@ def angle_isobath(lon, lat, h, isobath=100., smooth_isobath=True, window_length=
         dxk = R*(xiso[k+1]-xiso[k])*np.cos(yiso[k]*deg2rad)
         theta[k] = np.arctan2(dyk,dxk)
 
-    if smooth_isobath:
-        thetasm = np.zeros(shth)
-        for k in range(shth):
-            dyk = R*(yisosm[k+1]-yisosm[k])
-            dxk = R*(xisosm[k+1]-xisosm[k])*np.cos(yisosm[k]*deg2rad)
-            thetasm[k] = np.arctan2(dyk,dxk)
+    xisom = 0.5*(xiso[1:] + xiso[:-1])
+    yisom = 0.5*(yiso[1:] + yiso[:-1])
 
-    # if np.isnan(theta).sum()==0.:
-    xisom = 0.5*(xiso[1:]+xiso[:-1])
-    yisom = 0.5*(yiso[1:]+yiso[:-1])
-
-    if smooth_isobath:
-        xisomsm = 0.5*(xisosm[1:]+xisosm[:-1])
-        yisomsm = 0.5*(yisosm[1:]+yisosm[:-1])
-
-    ## Plots map showing the extracted isobath (and its smoothed version if smooth_isobath=True).
+    # Plots map showing the extracted isobath.
     if plot_map:
         fig, ax = plt.subplots()
         m = bb_map([lon.min(), lon.max()], [lat.min(), lat.max()], projection='cyl', resolution='h', ax=ax)
         m.plot(xisom, yisom, color='b', linestyle='-', zorder=3, latlon=True)
-        if smooth_isobath:
-            m.plot(xisomsm, yisomsm, color='r', linestyle='-', zorder=3, latlon=True)
-        raw_input("Press any key to continue.")
+        input("Press any key to continue.")
         plt.close()
 
-    if smooth_isobath:
-        return xisomsm, yisomsm, thetasm
-    else:
-        return xisom, yisom, theta
+    return xisom, yisom, theta
 
 def isopyc_depth(z, dens0, isopyc=1027.75, dzref=1.):
     """
@@ -1336,13 +1348,14 @@ def gen_dates(start, end, dt='day', input_datetime=False):
 		dates = rrule.rrule(dt, dtstart=parser.parse(start), until=parser.parse(end))
 	return list(dates)
 
-def fmt_isobath(cs, fontsize=8, fmt='%g', inline=True, inline_spacing=7, manual=True):
+def fmt_isobath(cs, fontsize=8, fmt='%g', inline=True, inline_spacing=7, manual=True, **kw):
 	"""
 	Formats the labels of isobath contours. `manual` is set to `True` by default,
 	but can be `False`, or a tuple/list of tuples with the coordinates of the labels.
 	All options are passed to plt.clabel().
 	"""
-	isobstrH = plt.clabel(cs, fontsize=fontsize, fmt=fmt, inline=inline, inline_spacing=inline_spacing, manual=manual)
+	isobstrH = plt.clabel(cs, fontsize=fontsize, fmt=fmt, inline=inline, \
+                          inline_spacing=inline_spacing, manual=manual, **kw)
 	for ih in range(0, len(isobstrH)): # Appends 'm' for meters at the end of the label.
 		isobstrh = isobstrH[ih]
 		isobstr = isobstrh.get_text()
