@@ -19,7 +19,8 @@ def deg2m_dist(lon, lat):
 
 	Calculates zonal and meridional grid spacing 'dx' and 'dy' (in meters)
 	from the 'lon' and 'lat' 2D meshgrid-type arrays (in degrees), using centered
-	(forward/backward) finite-differences for the interior (edge) points.
+	(forward/backward) finite-differences for the interior (edge) points. Assumes
+    a locally rectangular cartesian on the scales of 'dx' and 'dy'.
 	"""
 	lon, lat = map(np.asanyarray, (lon, lat))
 
@@ -78,28 +79,36 @@ def strain(lon, lat, u, v):
 
     return alpha
 
-def vorticity(lon, lat, u, v):
-	"""
-	USAGE
-	-----
-	zeta = vorticity(lon, lat, u, v)
+def vorticity(x, y, u, v, coord_type='geographic'):
+    """
+    USAGE
+    -----
+    zeta = vorticity(x, y, u, v, coord_type='geographic')
 
-	Calculates the vertical component 'zeta' (dv/dx - du/dy, in 1/s) of the
-	relative vorticity vector from the 'u' and 'v' velocity arrays (in m/s)
-	specified in spherical coordinates by the 'lon' and 'lat' 2D meshgrid-type
-	arrays (in degrees).
-	"""
-	lon, lat, u, v = map(np.asanyarray, (lon, lat, u, v))
+    Calculates the vertical component 'zeta' (dv/dx - du/dy, in 1/s) of the
+    relative vorticity vector from the 'u' and 'v' velocity arrays (in m/s)
+    specified in spherical coordinates by the 'lon' and 'lat' 2D meshgrid-type
+    arrays (in degrees).
+    """
+    x, y, u, v = map(np.array, (x, y, u, v))
 
-	dx, dy = deg2m_dist(lon, lat)
-	duy, _ = np.gradient(u)
-	_, dvx = np.gradient(v)
+    if coord_type=='geographic':
+        dx, dy = deg2m_dist(lon, lat)
+    elif coord_type=='cartesian':
+        dy, _ = np.gradient(y)
+        _, dx = np.gradient(x)
+    elif coord_type=='dxdy':
+        dx, dy = x, y
+        pass
 
-	dvdx = dvx/dx
-	dudy = duy/dy
-	vrt = dvdx - dudy # [1/s]
+    duy, _ = np.gradient(u)
+    _, dvx = np.gradient(v)
 
-	return vrt
+    dvdx = dvx/dx
+    dudy = duy/dy
+    vrt = dvdx - dudy # [1/s]
+
+    return vrt
 
 def pgf(z, y, x, eta, rho, pa=0., rho0=1025., geographic=True):
 	"""
