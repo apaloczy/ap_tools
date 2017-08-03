@@ -40,7 +40,7 @@ __all__ = ['flowfun',
            'bb_map',
            'dots_dualcolor']
 
-import os
+from os import system
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib
@@ -423,18 +423,22 @@ def get_arrdepth(arr):
 
     return np.array(all_nlevs)
 
-def fpointsbox(x, y, fig, ax, nboxes=1, plot=True, return_index=True):
+def fpointsbox(x, y, fig, ax, nboxes=1, plot=True, pause_secs=5, return_index=True):
     """
     USAGE
     -----
-    fpts = fpointsbox(x, y, fig, ax, nboxes=1, plot=True, return_index=True)
+    fpts = fpointsbox(x, y, fig, ax, nboxes=1, plot=True, pause_secs=5, return_index=True)
 
     Find points in a rectangle made with 2 ginput points.
     """
     fpts = np.array([])
     for n in range(nboxes):
         box = np.array(fig.ginput(n=2, timeout=0))
-        xb, yb = box[:,0], box[:,1]
+        try:
+            xb, yb = box[:,0], box[:,1]
+        except IndexError:
+            print("No points selected. Skipping box \# %d."%(n+1))
+            continue
         xl, xr, yd, yu = xb.min(), xb.max(), yb.min(), yb.max()
         xbox = np.array([xl, xr, xr, xl, xl])
         ybox = np.array([yd, yd, yu, yu, yd])
@@ -446,9 +450,15 @@ def fpointsbox(x, y, fig, ax, nboxes=1, plot=True, return_index=True):
         if plot:
             ax.plot(xbox, ybox, 'r', linestyle='solid', marker='o', ms=4)
             ax.plot(x[fptsi], y[fptsi], 'r', linestyle='none', marker='+', ms=5)
+            plt.draw()
             fig.show()
         else:
             fig.close()
+
+    if plot:
+        plt.draw()
+        fig.show()
+        system("sleep %d"%pause_secs)
 
     return fpts
 
