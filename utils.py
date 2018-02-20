@@ -62,6 +62,14 @@ from pygeodesy.sphericalNvector import LatLon as LatLon_sphere
 
 
 def seasonal_avg(t, F):
+    """
+    USAGE
+    -----
+    F_seasonal = seasonal_avg(t, F)
+
+    Calculates the seasonal average of variable F(t).
+    Assumes 't' is a 'datetime.datetime' object.
+    """
     tmo = np.array([ti.month for ti in t])
     ftmo = [tmo==mo for mo in range(1, 13)]
 
@@ -69,6 +77,16 @@ def seasonal_avg(t, F):
 
 
 def deseason(t, F):
+    """
+    USAGE
+    -----
+    F_nonssn = deseason(t, F)
+
+    Removes the seasonal signal of variable F(t).
+    Assumes 't' is a 'datetime.datetime' object.
+    Also assumes that F is sampled monthly and only for
+    complete years (i.e., t.size is a multiple of 12).
+    """
     Fssn = seasonal_avg(t, F)
     nyears = int(t.size/12)
     aux = np.array([])
