@@ -2,7 +2,8 @@
 # Author:      André Palóczy
 # E-mail:      paloczy@gmail.com
 
-__all__ = ['flowfun',
+__all__ = ['seasonal_avg',
+           'flowfun',
            'cumsimp',
            'rot_vec',
            'avgdir',
@@ -57,6 +58,14 @@ from gsw import distance
 from pygeodesy import Datums, VincentyError
 from pygeodesy.ellipsoidalVincenty import LatLon as LatLon
 from pygeodesy.sphericalNvector import LatLon as LatLon_sphere
+
+
+def seasonal_avg(t, F):
+    tmo = np.array([ti.month for ti in t])
+    ftmo = [tmo==mo for mo in range(1, 13)]
+
+    return np.array([F[ft].mean() for ft in ftmo])
+
 
 def flowfun(x, y, u, v, variable='psi', geographic=True):
 	"""
