@@ -3,6 +3,7 @@
 # E-mail:      paloczy@gmail.com
 
 __all__ = ['seasonal_avg',
+           'deseason',
            'flowfun',
            'cumsimp',
            'rot_vec',
@@ -65,6 +66,16 @@ def seasonal_avg(t, F):
     ftmo = [tmo==mo for mo in range(1, 13)]
 
     return np.array([F[ft].mean() for ft in ftmo])
+
+
+def deseason(t, F):
+    Fssn = seasonal_avg(t, F)
+    nyears = int(t.size/12)
+    aux = np.array([])
+    for n in range(nyears):
+        aux = np.concatenate((aux, Fssn))
+
+    return F - aux
 
 
 def flowfun(x, y, u, v, variable='psi', geographic=True):
