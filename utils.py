@@ -4,6 +4,7 @@
 
 __all__ = ['seasonal_avg',
            'deseason',
+           'stripmsk',
            'flowfun',
            'cumsimp',
            'rot_vec',
@@ -94,6 +95,17 @@ def deseason(t, F):
         aux = np.concatenate((aux, Fssn))
 
     return F - aux
+
+
+def stripmsk(arr, mask_invalid=False):
+    if mask_invalid:
+        arr = np.ma.mask_invalid(arr)
+    if np.ma.isMA(arr):
+        msk = arr.mask
+        arr = arr.data
+        arr[msk] = np.nan
+
+    return arr
 
 
 def flowfun(x, y, u, v, variable='psi', geographic=True):
