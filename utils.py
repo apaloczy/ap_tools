@@ -99,7 +99,7 @@ def deseason(t, F):
 
 def stripmsk(arr, mask_invalid=False):
     if mask_invalid:
-        arr = np.ma.mask_invalid(arr)
+        arr = np.ma.masked_invalid(arr)
     if np.ma.isMA(arr):
         msk = arr.mask
         arr = arr.data
