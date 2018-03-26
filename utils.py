@@ -4,6 +4,8 @@
 
 __all__ = ['seasonal_avg',
            'deseason',
+           'blkavg',
+           'blkapply',
            'stripmsk',
            'flowfun',
            'cumsimp',
@@ -52,6 +54,7 @@ from mpl_toolkits.basemap import Basemap
 from datetime import datetime,timedelta
 from dateutil import rrule,parser
 from scipy.io import loadmat,savemat
+from scipy import signal
 from scipy.signal import savgol_filter
 from glob import glob
 from netCDF4 import Dataset, num2date
@@ -95,6 +98,62 @@ def deseason(t, F):
         aux = np.concatenate((aux, Fssn))
 
     return F - aux
+
+
+def blkavg(x, y, every=2):
+    """
+    Block-averages a variable y(x). Returns its block average
+    and standard deviation and new x axis.
+    """
+    nx = x.size
+    xblk, yblk, yblkstd = np.array([]), np.array([]), np.array([])
+    for i in range(every, nx+every, every):
+        yi = y[i-every:i]
+        xblk = np.append(xblk, x[i-every:i].mean())
+        yblk = np.append(yblk, yi.mean())
+        yblkstd = np.append(yblkstd, yi.std())
+
+    return xblk, yblk, yblkstd
+
+
+def blkapply(x, f, nblks, overlap=0, demean=False, detrend=False, verbose=True):
+    """
+    Divides array 'x' in 'nblks' blocks and applies function 'f' = f(x) on
+    each block.
+    """
+    x = np.array(x)
+    assert callable(f), "f must be a function"
+
+    nx = x.size
+    ni = int(nx/nblks)               # Number of data points in each chunk.
+    y = np.zeros(ni)                 # Array that will receive each block.
+    dn = int(round(ni - overlap*ni)) # How many indices to move forward with
+                                     # each chunk (depends on the % overlap).
+    if demean:
+        x = x - x.mean()
+
+    if detrend:
+        x = signal.detrend(x, type='linear')
+
+    n=0
+    il, ir = 0, ni
+    while ir<=nx:
+        y = y + f(x[il:ir]) # Apply function and accumulate the current bock.
+        il+=dn; ir+=dn
+        n+=1
+
+    y /= n         # Divide by number of blocks actually used.
+    ncap = nx - il # Number of points left out at the end of array.
+
+    if verbose:
+        print("")
+        print("Left last %d data points out (%.1f %% of all points)."%(ncap,100*ncap/nx))
+        if overlap>0:
+            print("Intended %d blocks, but could fit %d blocks, with"%(nblks,n))
+            print('overlap of %.1f %%, %d points per block.'%(100*overlap,dn))
+        print("")
+
+    return y
 
 
 def stripmsk(arr, mask_invalid=False):
