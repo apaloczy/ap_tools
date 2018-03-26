@@ -9,6 +9,7 @@ __all__ = ['gauss_curve',
 		   'kurtosis',
 		   'rcoeff',
 		   'autocorr',
+           'crosscorr',
 		   'Tdecorr',
 		   'Neff',
 		   'lnsmc',
@@ -20,6 +21,8 @@ __all__ = ['gauss_curve',
 
 import numpy as np
 import matplotlib.pyplot as plt
+from pandas import Series
+from scipy import signal
 from scipy.special import erfinv, betainc, betaincinv
 from scipy.stats.distributions import norm
 from scipy.stats.distributions import t as student
@@ -188,6 +191,7 @@ def rcoeff(x, y):
 
 	return r
 
+
 def autocorr(x, biased=True):
 	"""
 	USAGE
@@ -247,6 +251,81 @@ def autocorr(x, biased=True):
 	Rxx = Cxx/np.var(x)
 
 	return Rxx
+
+
+def crosscorr(x, y, nblks, maxlag=10, overlap=0, demean=True, detrend=True, \
+              accomodate=True, verbose=True):
+    """
+    Lag-N cross correlation.
+    Parameters
+    ----------
+    nlags : int, default 0
+    x, y  : Arrays of equal length
+
+    Returns
+    ----------
+    crosscorr : float
+
+    Based on: https://stackoverflow.com/questions/33171413/...
+    ...cross-correlation-time-lag-correlation-with-pandas
+    """
+    x, y = np.array(x), np.array(y)
+    nx, ny = x.size, y.size
+    assert x.size==y.size, "The series must have the same length"
+
+    ni = int(nx/nblks)               # Number of data points in each chunk.
+    dn = int(round(ni - overlap*ni)) # How many indices to move forward with
+                                     # each chunk (depends on the % overlap).
+    if verbose:
+        if maxlag>ni:
+            print("Maxlag is too large. Setting it to block size.")
+            maxlag = ni
+
+    if accomodate:
+        print("Accomodating maxlag to cover the entire block (%d points)"%ni)
+        maxlag = ni
+
+    if demean:
+        x = x - x.mean()
+        y = y - y.mean()
+    if detrend:
+        x = signal.detrend(x, type='linear')
+        y = signal.detrend(y, type='linear')
+
+    xycorr = np.zeros(maxlag) # Array that will receive cross-correlation of each block.
+    n=0
+    il, ir = 0, ni
+    while ir<=nx:
+        xn = x[il:ir]
+        yn = y[il:ir]
+        if demean:
+            xn = xn - xn.mean()
+            yn = yn - yn.mean()
+        if detrend:
+            xn = signal.detrend(xn, type='linear')
+            yn = signal.detrend(yn, type='linear')
+        # Calculate cross-correlation for current block up to desired maximum lag.
+        xn, yn = map(Series, (xn, yn))
+        xycorr += [xn.corr(yn.shift(periods=lagn)) for lagn in range(maxlag)]
+        il+=dn; ir+=dn
+        n+=1
+
+    xycorr /= n    # Divide by number of blocks actually used.
+    ncap = nx - il # Number of points left out at the end of array.
+
+    if verbose:
+        print("")
+        if ncap==0:
+            print("No data points were left out.")
+        else:
+            print("Left last %d data points out (%.1f %% of all points)."%(ncap,100*ncap/nx))
+        if overlap>0:
+            print("Intended %d blocks, but could fit %d blocks, with"%(nblks,n))
+            print('overlap of %.1f %%, %d points per block.'%(100*overlap,dn))
+        print("")
+
+    return xycorr
+
 
 def Tdecorr(Rxx, M=None, dtau=1.):
 	"""
