@@ -129,16 +129,18 @@ def blkapply(x, f, nblks, overlap=0, demean=False, detrend=False, verbose=True):
     y = np.zeros(ni)                 # Array that will receive each block.
     dn = int(round(ni - overlap*ni)) # How many indices to move forward with
                                      # each chunk (depends on the % overlap).
-    if demean:
-        x = x - x.mean()
-
-    if detrend:
-        x = signal.detrend(x, type='linear')
+    # Demean/detrend the full record first (removes the lowest frequencies).
+    # Then, also demean/detrend each block beffore applying f().
+    if demean: x = x - x.mean()
+    if detrend: x = signal.detrend(x, type='linear')
 
     n=0
     il, ir = 0, ni
     while ir<=nx:
-        y = y + f(x[il:ir]) # Apply function and accumulate the current bock.
+        xn = x[il:ir]
+        if demean: xn = xn - xn.mean()
+        if detrend: xn = signal.detrend(xn, type='linear')
+        y = y + f(xn) # Apply function and accumulate the current bock.
         il+=dn; ir+=dn
         n+=1
 
@@ -149,6 +151,7 @@ def blkapply(x, f, nblks, overlap=0, demean=False, detrend=False, verbose=True):
         print("")
         print("Left last %d data points out (%.1f %% of all points)."%(ncap,100*ncap/nx))
         if overlap>0:
+            print("")
             print("Intended %d blocks, but could fit %d blocks, with"%(nblks,n))
             print('overlap of %.1f %%, %d points per block.'%(100*overlap,dn))
         print("")
