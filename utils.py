@@ -5,6 +5,7 @@
 __all__ = ['seasonal_avg',
            'deseason',
            'blkavg',
+           'blkavgt',
            'blkapply',
            'stripmsk',
            'flowfun',
@@ -57,7 +58,7 @@ from scipy.io import loadmat,savemat
 from scipy import signal
 from scipy.signal import savgol_filter
 from glob import glob
-from netCDF4 import Dataset, num2date
+from netCDF4 import Dataset, num2date, date2num
 from pandas import rolling_window
 from gsw import distance
 from pygeodesy import Datums, VincentyError
@@ -114,6 +115,25 @@ def blkavg(x, y, every=2):
         yblkstd = np.append(yblkstd, yi.std())
 
     return xblk, yblk, yblkstd
+
+
+def blkavgt(t, x, every=2):
+    """
+    Block-averages a variable x(t). Returns its block average
+    and standard deviation and new t axis.
+    """
+    nt = t.size
+    units = 'days since 01-01-01'
+    calendar = 'proleptic_gregorian'
+    t = date2num(t, units=units, calendar=calendar)
+    tblk, xblk = np.array([]), np.array([])
+    for i in range(every, nt+every, every):
+        xi = x[i-every:i]
+        tblk = np.append(tblk, t[i-every:i].mean())
+        xblk = np.append(xblk, xi.mean())
+
+    tblk = num2date(tblk, units=units, calendar=calendar)
+    return tblk, xblk
 
 
 def blkapply(x, f, nblks, overlap=0, demean=False, detrend=False, verbose=True):
