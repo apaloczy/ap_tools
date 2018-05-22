@@ -59,7 +59,7 @@ from scipy import signal
 from scipy.signal import savgol_filter
 from glob import glob
 from netCDF4 import Dataset, num2date, date2num
-from pandas import rolling_window
+# from pandas import rolling_window # FIXME, new pandas way of doing this is, e.g., arr = Series(...).rolling(...).mean()
 from gsw import distance
 from pygeodesy import Datums, VincentyError
 from pygeodesy.ellipsoidalVincenty import LatLon as LatLon
@@ -1291,11 +1291,11 @@ def get_isobath(lon, lat, topo, iso, cyclic=False, smooth_isobath=False, window_
             yr = yiso[fright:]
             xiso = np.concatenate((xr, xiso, xl))
             yiso = np.concatenate((yr, yiso, yl))
-            xiso = rolling_window(xiso, window=window_length, win_type=win_type, center=True, **kw)[fleft:fright]
-            yiso = rolling_window(yiso, window=window_length, win_type=win_type, center=True, **kw)[fleft:fright]
-        else:
-            xiso = rolling_window(xiso, window=window_length, win_type=win_type, center=True, **kw)
-            yiso = rolling_window(yiso, window=window_length, win_type=win_type, center=True, **kw)
+            # xiso = rolling_window(xiso, window=window_length, win_type=win_type, center=True, **kw)[fleft:fright] # FIXME
+            # yiso = rolling_window(yiso, window=window_length, win_type=win_type, center=True, **kw)[fleft:fright] # FIXME
+        # else:
+            # xiso = rolling_window(xiso, window=window_length, win_type=win_type, center=True, **kw) # FIXME
+            # yiso = rolling_window(yiso, window=window_length, win_type=win_type, center=True, **kw) # FIXME
 
     return xiso, yiso
 
