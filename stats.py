@@ -253,62 +253,84 @@ def autocorr(x, biased=True):
 	return Rxx
 
 
-def crosscorr(x, y, nblks, maxlag=10, overlap=0, demean=True, detrend=True, \
-              accomodate=True, verbose=True):
+def crosscorr(x, y, nblks, maxlags=10, overlap=0, twosided=True, demean=True,
+              detrend=True, verbose=True):
     """
-    Lag-N cross correlation.
+    Lag-N cross correlation averaged with Welch's Method.
     Parameters
     ----------
-    nlags : int, default 0
-    x, y  : Arrays of equal length
+    x, y     : Arrays of equal length.
+    nblks    : Number of blocks to average cross-correlation.
+    maxlags  : int, default 10.
+    overlap  : float, fraction of overlap between consecutive chunks. Default 0.
+    twosided : Whether to calculate the cross-correlation at negative lags as
+               well. Has no effect if x and y are the same array, in which case
+               the autocorrelation function is calculated.
 
     Returns
     ----------
-    crosscorr : float
+    crosscorr : float array.
 
     Based on: https://stackoverflow.com/questions/33171413/...
     ...cross-correlation-time-lag-correlation-with-pandas
     """
+    if x is y:
+        auto = True
+    else:
+        auto = False
     x, y = np.array(x), np.array(y)
     nx, ny = x.size, y.size
     assert x.size==y.size, "The series must have the same length"
 
+    nblks, maxlags = int(nblks), int(maxlags)
     ni = int(nx/nblks)               # Number of data points in each chunk.
     dn = int(round(ni - overlap*ni)) # How many indices to move forward with
                                      # each chunk (depends on the % overlap).
-    if verbose:
-        if maxlag>ni:
-            print("Maxlag is too large. Setting it to block size.")
-            maxlag = ni
 
-    if accomodate:
-        print("Accomodating maxlag to cover the entire block (%d points)"%ni)
-        maxlag = ni
+    if verbose:
+        if maxlags>ni:
+            print("Maximum lag is too large. Setting it to block size.")
+            maxlags = ni
+
+    if twosided or auto:
+        lags = range(-maxlags+1,maxlags+1)
+    else:
+        lags = range(maxlags+1)
 
     if demean:
-        x = x - x.mean()
-        y = y - y.mean()
+        x -= x.mean()
+        y -= y.mean()
+
     if detrend:
         x = signal.detrend(x, type='linear')
         y = signal.detrend(y, type='linear')
 
-    xycorr = np.zeros(maxlag) # Array that will receive cross-correlation of each block.
+    # Array that will receive cross-correlation of each block.
+    xycorr = np.zeros(len(lags))
+
     n=0
     il, ir = 0, ni
     while ir<=nx:
         xn = x[il:ir]
         yn = y[il:ir]
         if demean:
-            xn = xn - xn.mean()
-            yn = yn - yn.mean()
+            xn -= xn.mean()
+            yn -= yn.mean()
         if detrend:
             xn = signal.detrend(xn, type='linear')
             yn = signal.detrend(yn, type='linear')
-        # Calculate cross-correlation for current block up to desired maximum lag.
+
+        # Calculate cross-correlation for current block up to desired maximum lag - 1.
         xn, yn = map(Series, (xn, yn))
-        xycorr += [xn.corr(yn.shift(periods=lagn)) for lagn in range(maxlag)]
+        xycorr += np.array([xn.corr(yn.shift(periods=lagn)) for lagn in lags])
+
         il+=dn; ir+=dn
         n+=1
+
+    # pandas.Series.corr(method='pearson') -> pandas.nanops.nancorr() ...
+    # -> pandas.nanops.get_corr_function() -> np.corrcoef -> numpy.cov(bias=False as default).
+    # So np.corrcoef() returns the UNbiased correlation coefficient by default
+    # (i.e., normalized by N-k instead of N).
 
     xycorr /= n    # Divide by number of blocks actually used.
     ncap = nx - il # Number of points left out at the end of array.
@@ -319,12 +341,21 @@ def crosscorr(x, y, nblks, maxlag=10, overlap=0, demean=True, detrend=True, \
             print("No data points were left out.")
         else:
             print("Left last %d data points out (%.1f %% of all points)."%(ncap,100*ncap/nx))
+        print("Averaged %d blocks, each with %d lags."%(n,maxlags))
         if overlap>0:
             print("Intended %d blocks, but could fit %d blocks, with"%(nblks,n))
             print('overlap of %.1f %%, %d points per block.'%(100*overlap,dn))
         print("")
 
-    return xycorr
+    lags = np.array(lags)
+    if auto: # Autocorrelation of a real variable is an even function.
+        fo = np.where(lags==0)[0][0]
+        lags, xycorr = lags[fo:], xycorr[fo:]
+        xycorr[1:] = 2*xycorr[1:]
+
+    fgud=~np.isnan(xycorr)
+
+    return lags[fgud], xycorr[fgud]
 
 
 def Tdecorr(Rxx, M=None, dtau=1.):
