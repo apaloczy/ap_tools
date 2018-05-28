@@ -253,8 +253,8 @@ def autocorr(x, biased=True):
 	return Rxx
 
 
-def crosscorr(x, y, nblks, maxlags=10, overlap=0, twosided=True, demean=True,
-              detrend=True, verbose=True):
+def crosscorr(x, y, nblks, maxlags=10, overlap=0, onesided=False,
+              demean=True, detrend=True, verbose=True):
     """
     Lag-N cross correlation averaged with Welch's Method.
     Parameters
@@ -263,9 +263,10 @@ def crosscorr(x, y, nblks, maxlags=10, overlap=0, twosided=True, demean=True,
     nblks    : Number of blocks to average cross-correlation.
     maxlags  : int, default 10.
     overlap  : float, fraction of overlap between consecutive chunks. Default 0.
-    twosided : Whether to calculate the cross-correlation at negative lags as
-               well. Has no effect if x and y are the same array, in which case
-               the autocorrelation function is calculated.
+    onesided : Whether to calculate the cross-correlation only at
+               positive lags (default False). Has no effect if
+               x and y are the same array, in which case the
+               one-sided autocorrelation function is calculated.
 
     Returns
     ----------
@@ -292,10 +293,10 @@ def crosscorr(x, y, nblks, maxlags=10, overlap=0, twosided=True, demean=True,
             print("Maximum lag is too large. Setting it to block size.")
             maxlags = ni
 
-    if twosided or auto:
-        lags = range(-maxlags+1,maxlags+1)
-    else:
+    if onesided:
         lags = range(maxlags+1)
+    else:
+        lags = range(-maxlags, maxlags+1)
 
     if demean:
         x -= x.mean()
@@ -348,10 +349,11 @@ def crosscorr(x, y, nblks, maxlags=10, overlap=0, twosided=True, demean=True,
         print("")
 
     lags = np.array(lags)
-    if auto: # Autocorrelation of a real variable is an even function.
+    if auto:
         fo = np.where(lags==0)[0][0]
-        lags, xycorr = lags[fo:], xycorr[fo:]
-        xycorr[1:] = 2*xycorr[1:]
+        xycorr[fo+1:] = xycorr[fo+1:] + xycorr[:fo]
+        lags = lags[fo:]
+        xycorr = xycorr[fo:]
 
     fgud=~np.isnan(xycorr)
 
