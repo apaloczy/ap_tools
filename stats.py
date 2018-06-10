@@ -253,7 +253,7 @@ def autocorr(x, biased=True):
 	return Rxx
 
 
-def crosscorr(x, y, nblks, maxlags=10, overlap=0, onesided=False,
+def crosscorr(x, y, nblks, maxlags=0, overlap=0, onesided=False,
               demean=True, detrend=True, verbose=True):
     """
     Lag-N cross correlation averaged with Welch's Method.
@@ -261,7 +261,8 @@ def crosscorr(x, y, nblks, maxlags=10, overlap=0, onesided=False,
     ----------
     x, y     : Arrays of equal length.
     nblks    : Number of blocks to average cross-correlation.
-    maxlags  : int, default 10.
+    maxlags  : int, default (0) calculates te largest possible number of lags,
+               i.e., the number of points in each chunk.
     overlap  : float, fraction of overlap between consecutive chunks. Default 0.
     onesided : Whether to calculate the cross-correlation only at
                positive lags (default False). Has no effect if
@@ -271,9 +272,6 @@ def crosscorr(x, y, nblks, maxlags=10, overlap=0, onesided=False,
     Returns
     ----------
     crosscorr : float array.
-
-    Based on: https://stackoverflow.com/questions/33171413/...
-    ...cross-correlation-time-lag-correlation-with-pandas
     """
     if x is y:
         auto = True
@@ -288,10 +286,14 @@ def crosscorr(x, y, nblks, maxlags=10, overlap=0, onesided=False,
     dn = int(round(ni - overlap*ni)) # How many indices to move forward with
                                      # each chunk (depends on the % overlap).
 
-    if verbose:
-        if maxlags>ni:
-            print("Maximum lag is too large. Setting it to block size.")
-            maxlags = ni
+    if maxlags==0:
+        if verbose:
+            print("Maximum lag was not specified. Accomodating it to block size (%d)."%ni)
+        maxlags = ni
+    elif maxlags>ni:
+        if verbose:
+            print("Maximum lag is too large. Accomodating it to block size (%d)."%ni)
+        maxlags = ni
 
     if onesided:
         lags = range(maxlags+1)
