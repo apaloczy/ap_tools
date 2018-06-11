@@ -3,6 +3,7 @@
 # E-mail:      paloczy@gmail.com
 
 __all__ = ['seasonal_avg',
+           'seasonal_std',
            'deseason',
            'blkavg',
            'blkavgt',
@@ -79,6 +80,21 @@ def seasonal_avg(t, F):
     ftmo = [tmo==mo for mo in range(1, 13)]
 
     return np.array([F[ft].mean() for ft in ftmo])
+
+
+def seasonal_std(t, F):
+    """
+    USAGE
+    -----
+    F_seasonal = seasonal_std(t, F)
+
+    Calculates the seasonal standard deviation of variable F(t).
+    Assumes 't' is a 'datetime.datetime' object.
+    """
+    tmo = np.array([ti.month for ti in t])
+    ftmo = [tmo==mo for mo in range(1, 13)]
+
+    return np.array([F[ft].std() for ft in ftmo])
 
 
 def deseason(t, F):
