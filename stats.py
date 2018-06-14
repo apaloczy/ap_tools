@@ -418,11 +418,11 @@ def Tdecorr(Rxx, M=None, dtau=1., verbose=False):
     return Td
 
 
-def Tdecorrw(x, nblks=30, ret_median=False, verbose=True):
+def Tdecorrw(x, nblks=30, ret_median=True, verbose=True):
     """
     USAGE
     -----
-    Ti = Tdecorrw(x, nblks=30, ret_median=False, verbose=True)
+    Ti = Tdecorrw(x, nblks=30, ret_median=True, verbose=True)
 
     'Ti' is the integral timescale calculated from the
     autocorrelation function calculated for variable 'x'
@@ -431,7 +431,7 @@ def Tdecorrw(x, nblks=30, ret_median=False, verbose=True):
     x = np.array(x)
     dnblkslr = round(nblks/2)
 
-    tis = [Tdecorr(crosscorr(x1, x2, nblks=n, verbose=verbose)[1]).max() for n in range(nblks-dnblkslr, nblks+dnblkslr+1)]
+    tis = [Tdecorr(crosscorr(x, x, nblks=n, verbose=verbose)[1]).max() for n in range(nblks-dnblkslr, nblks+dnblkslr+1)]
     tis = np.ma.masked_invalid(tis)
 
     if verbose:
