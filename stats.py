@@ -11,6 +11,7 @@ __all__ = ['gauss_curve',
 		   'autocorr',
            'crosscorr',
 		   'Tdecorr',
+		   'Tdecorrw',
 		   'Neff',
 		   'lnsmc',
 		   'ci_mean',
@@ -348,7 +349,7 @@ def crosscorr(x, y, nblks, maxlags=0, overlap=0, onesided=False, verbose=True):
     return lags[fgud], xycorr[fgud]
 
 
-def Tdecorr(Rxx, M=None, dtau=1., verbose=True):
+def Tdecorr(Rxx, M=None, dtau=1., verbose=False):
     """
     USAGE
     -----
@@ -415,6 +416,36 @@ def Tdecorr(Rxx, M=None, dtau=1., verbose=True):
         print("Maximum value of the cumulative sum: %.2f."%Td.max())
 
     return Td
+
+
+def Tdecorrw(x, nblks=30, ret_median=False, verbose=True):
+    """
+    USAGE
+    -----
+    Ti = Tdecorrw(x, nblks=30, ret_median=False, verbose=True)
+
+    'Ti' is the integral timescale calculated from the
+    autocorrelation function calculated for variable 'x'
+    block-averaged in 'nblks' chunks.
+    """
+    x = np.array(x)
+    dnblkslr = round(nblks/2)
+
+    tis = [Tdecorr(crosscorr(x1, x2, nblks=n, verbose=verbose)[1]).max() for n in range(nblks-dnblkslr, nblks+dnblkslr+1)]
+    tis = np.ma.masked_invalid(tis)
+
+    if verbose:
+        print("========================")
+        print(tis)
+        print("========================")
+        p1, p2, p3, p4, p5 = map(np.percentile, [tis]*5, (10, 25, 50, 75, 90))
+        print("--> 10 %%, 25 %%, 50 %%, 75 %%, 90 %% percentiles for Ti:  %.2f,  %.2f,  %.2f,  %.2f,  %.2f."%(p1, p2, p3, p4, p5))
+        print("------------------------")
+
+    if ret_median:
+        return np.median(tis)
+    else:
+        return tis
 
 
 def Neff(Tdecorr, N, dt=1.):
