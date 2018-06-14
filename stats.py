@@ -16,6 +16,7 @@ __all__ = ['gauss_curve',
 		   'ci_mean',
 		   'rsig',
 		   'rsig_student',
+           'arsig',
 		   'rci_fisher',
 		   'rci_boot']
 
@@ -347,72 +348,74 @@ def crosscorr(x, y, nblks, maxlags=0, overlap=0, onesided=False, verbose=True):
     return lags[fgud], xycorr[fgud]
 
 
-def Tdecorr(Rxx, M=None, dtau=1.):
-	"""
-	USAGE
-	-----
-	Td = Tdecorr(Rxx)
+def Tdecorr(Rxx, M=None, dtau=1., verbose=True):
+    """
+    USAGE
+    -----
+    Td = Tdecorr(Rxx)
 
-	Computes the integral scale Td (AKA decorrelation scale, independence scale)
-	for a data sequence with autocorrelation function Rxx. 'M' is the number of
-	lags to incorporate in the summation (defaults to all lags) and 'dtau' is the
-	lag time step (defaults to 1).
+    Computes the integral scale Td (AKA decorrelation scale, independence scale)
+    for a data sequence with autocorrelation function Rxx. 'M' is the number of
+    lags to incorporate in the summation (defaults to all lags) and 'dtau' is the
+    lag time step (defaults to 1).
 
-	The formal definition of the integral scale is the total area under the
-	autocorrelation curve Rxx(tau):
+    The formal definition of the integral scale is the total area under the
+    autocorrelation curve Rxx(tau):
 
-                 /+inf
-	Td = 2 * |     Rxx(tau) dtau
-	         /0
+    /+inf
+    Td = 2 * |     Rxx(tau) dtau
+    /0
 
-	In practice, however, Td may become unrealistic if all of Rxx is summed
-	(e.g., often goes to zero for data dominated by periodic signals); a
-	different approach is to instead change M in the summation and use the
-	maximum value of the integral Td(t):
+    In practice, however, Td may become unrealistic if all of Rxx is summed
+    (e.g., often goes to zero for data dominated by periodic signals); a
+    different approach is to instead change M in the summation and use the
+    maximum value of the integral Td(t):
 
-                    /t
-	Td(t) = 2 * |     Rxx(tau) dtau
-	            /0
+    /t
+    Td(t) = 2 * |     Rxx(tau) dtau
+    /0
 
-	References
-	----------
-	e.g., Thomson and Emery (2014),
-	Data analysis methods in physical oceanography,
-	p. 274, equation 3.137a.
+    References
+    ----------
+    e.g., Thomson and Emery (2014),
+    Data analysis methods in physical oceanography,
+    p. 274, equation 3.137a.
 
-	Gille lecture notes on data analysis, available
-	at http://www-pord.ucsd.edu/~sgille/mae127/lecture10.pdf
-	"""
-	Rxx = np.asanyarray(Rxx)
-	C0 = Rxx[0]
-	N = Rxx.size # Sequence size.
+    Gille lecture notes on data analysis, available
+    at http://www-pord.ucsd.edu/~sgille/mae127/lecture10.pdf
+    """
+    Rxx = np.asanyarray(Rxx)
+    C0 = Rxx[0]
+    N = Rxx.size # Sequence size.
 
-	# Number of lags 'M' to incorporate in the summation.
-	# Sum over all of the sequence if M is not chosen.
-	if not M:
-		M = N
+    # Number of lags 'M' to incorporate in the summation.
+    # Sum over all of the sequence if M is not chosen.
+    if not M:
+        M = N
 
-	# Integrate the autocorrelation function.
-	Td = np.zeros(M)
-	for m in range(M):
-		Tdaux = 0.
-		for k in range(m-1):
-			Rm = (Rxx[k] + Rxx[k+1])/2. # Midpoint value of the autocorrelation function.
-			Tdaux = Tdaux + Rm*dtau # Riemann-summing Rxx.
+    # Integrate the autocorrelation function.
+    Td = np.zeros(M)
+    for m in range(M):
+        Tdaux = 0.
+        for k in range(m-1):
+            Rm = (Rxx[k] + Rxx[k+1])/2. # Midpoint value of the autocorrelation function.
+            Tdaux = Tdaux + Rm*dtau # Riemann-summing Rxx.
 
-		Td[m] = Tdaux
+        Td[m] = Tdaux
 
-	# Normalize the integral function by the autocorrelation at zero lag
-	# and double it to include the contribution of the side with
-	# negative lags (C is symmetric about zero).
-	Td = (2./C0)*Td
+    # Normalize the integral function by the autocorrelation at zero lag
+    # and double it to include the contribution of the side with
+    # negative lags (C is symmetric about zero).
+    Td = (2./C0)*Td
 
-	print("")
-	print("Theoretical integral scale --> 2 * int 0...+inf [Rxx(tau)] dtau: %.2f."%Td[-1])
-	print("")
-	print("Maximum value of the cumulative sum (empirical integral scale): %.2f."%Td.max())
+    if verbose:
+        print("")
+        print("Theoretical integral scale --> 2 * int 0...+inf [Rxx(tau)] dtau: %.2f."%Td[-1])
+        print("")
+        print("Maximum value of the cumulative sum: %.2f."%Td.max())
 
-	return Td
+    return Td
+
 
 def Neff(Tdecorr, N, dt=1.):
 	"""
@@ -609,6 +612,7 @@ def rsig(ndof_eff, alpha=0.95):
 
 	return rcrit_z
 
+
 def rsig_student(ndof_eff, alpha=0.95):
 	"""
 	USAGE
@@ -635,6 +639,34 @@ def rsig_student(ndof_eff, alpha=0.95):
 	rcrit_t = tcrit/np.sqrt(ndof + tcrit**2)
 
 	return rcrit_t
+
+
+def arsig(r0, Ndt, T1, T2, verbose=True):
+    """
+    USAGE
+    -----
+    alpha_rsig = arsig(r0, Ndt, T1, T2, verbose=True)
+
+    The returned 'alpha_sig' is the CL at which the
+    correlation coefficient 'r0' between two variables
+    with integral timescales 'T1' and 'T2' and length 'Ndt'
+    is significant.
+    """
+    Tslow = np.maximum(T1, T2) # The effective number of
+    edof = Ndt/Tslow           # DoFs is constrained by the
+                               # slower-decorrelating variable.
+    alphai = 0.4
+    issig = True
+    while issig and alphai<1.0:
+        rsigi = rsig(edof, alpha=alphai)
+        issig=r0>=rsigi
+        alphai+=0.01
+
+    if verbose:
+        print("Queried r = %.3f with %.1f EDoF. It is significant at **%.2f** CL."%(r0, edof, alphai))
+
+    return alphai
+
 
 def rci_fisher(r, ndof_eff, alpha=0.95, verbose=True):
 	"""
