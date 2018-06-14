@@ -253,8 +253,7 @@ def autocorr(x, biased=True):
 	return Rxx
 
 
-def crosscorr(x, y, nblks, maxlags=0, overlap=0, onesided=False,
-              demean=True, detrend=True, verbose=True):
+def crosscorr(x, y, nblks, maxlags=0, overlap=0, onesided=False, verbose=True):
     """
     Lag-N cross correlation averaged with Welch's Method.
     Parameters
@@ -300,14 +299,6 @@ def crosscorr(x, y, nblks, maxlags=0, overlap=0, onesided=False,
     else:
         lags = range(-maxlags, maxlags+1)
 
-    if demean:
-        x -= x.mean()
-        y -= y.mean()
-
-    if detrend:
-        x = signal.detrend(x, type='linear')
-        y = signal.detrend(y, type='linear')
-
     # Array that will receive cross-correlation of each block.
     xycorr = np.zeros(len(lags))
 
@@ -316,12 +307,6 @@ def crosscorr(x, y, nblks, maxlags=0, overlap=0, onesided=False,
     while ir<=nx:
         xn = x[il:ir]
         yn = y[il:ir]
-        if demean:
-            xn -= xn.mean()
-            yn -= yn.mean()
-        if detrend:
-            xn = signal.detrend(xn, type='linear')
-            yn = signal.detrend(yn, type='linear')
 
         # Calculate cross-correlation for current block up to desired maximum lag - 1.
         xn, yn = map(Series, (xn, yn))
