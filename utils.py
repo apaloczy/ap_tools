@@ -6,9 +6,12 @@ __all__ = ['seasonal_avg',
            'seasonal_std',
            'deseason',
            'blkavg',
+           'blkavgdir',
            'blkavgt',
            'blkapply',
            'stripmsk',
+           'pydatetime2m_arr',
+           'm2pydatetime_arr',
            'flowfun',
            'cumsimp',
            'rot_vec',
@@ -53,9 +56,9 @@ import matplotlib.pyplot as plt
 import matplotlib
 from matplotlib import path
 from mpl_toolkits.basemap import Basemap
-from datetime import datetime,timedelta
-from dateutil import rrule,parser
-from scipy.io import loadmat,savemat
+from datetime import datetime, timedelta
+from dateutil import rrule, parser
+from scipy.io import loadmat, savemat
 from scipy import signal
 from scipy.signal import savgol_filter
 from glob import glob
@@ -133,6 +136,20 @@ def blkavg(x, y, every=2):
     return xblk, yblk, yblkstd
 
 
+def blkavgdir(x, ydir, every=2, degrees=False, axis=None):
+    """
+    Block-averages a PERIODIC variable ydir(x). Returns its
+    block average and new x axis.
+    """
+    nx = x.size
+    xblk, yblk, yblkstd = np.array([]), np.array([]), np.array([])
+    for i in range(every, nx+every, every):
+        xblk = np.append(xblk, x[i-every:i].mean())
+        yblk = np.append(yblk, avgdir(ydir[i-every:i], degrees=degrees, axis=axis))
+
+    return xblk, yblk
+
+
 def blkavgt(t, x, every=2):
     """
     Block-averages a variable x(t). Returns its block average
@@ -204,6 +221,31 @@ def stripmsk(arr, mask_invalid=False):
         arr[msk] = np.nan
 
     return arr
+
+
+def pydatetime2m_arr(pydt_arr):
+    pydt_arr = np.array(pydt_arr)
+    secperyr = 86400.0
+    timedt = timedelta(days=366)
+    matdt = []
+    for pydt in pydt_arr.tolist():
+        m = pydt.toordinal() + timedt
+        dfrac = pydt - datetime(pydt.year,pydt.month,pydt.day,0,0,0).seconds/secperyr
+        matdt.append(m.toordinal() + dfrac)
+
+    return np.array(matdt)
+
+
+def m2pydatetime_arr(mdatenum_arr):
+    mdatenum_arr = np.array(mdatenum_arr)
+    timedt = timedelta(days=366)
+    pydt = []
+    for mdt in mdatenum_arr.tolist():
+        d = datetime.fromordinal(int(mdt))
+        dfrac = timedelta(days=mdt%1) - timedt
+        pydt.append(d + dfrac)
+
+    return np.array(pydt)
 
 
 def flowfun(x, y, u, v, variable='psi', geographic=True):
