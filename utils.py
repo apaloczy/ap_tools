@@ -12,6 +12,8 @@ __all__ = ['seasonal_avg',
            'stripmsk',
            'pydatetime2m_arr',
            'm2pydatetime_arr',
+           'npdt2dt',
+           'doy2date',
            'flowfun',
            'cumsimp',
            'rot_vec',
@@ -64,6 +66,7 @@ from scipy.signal import savgol_filter
 from glob import glob
 from netCDF4 import Dataset, num2date, date2num
 # from pandas import rolling_window # FIXME, new pandas way of doing this is, e.g., arr = Series(...).rolling(...).mean()
+from pandas import Timestamp
 from gsw import distance
 from pygeodesy import Datums, VincentyError
 from pygeodesy.ellipsoidalVincenty import LatLon as LatLon
@@ -246,6 +249,32 @@ def m2pydatetime_arr(mdatenum_arr):
         pydt.append(d + dfrac)
 
     return np.array(pydt)
+
+
+def npdt2dt(tnp):
+    """
+    USAGE
+    -----
+    t_datetime = npdt2dt(t_numpydatetime64)
+
+    Convert an array of numpy.datetime64 timestamps to datetime.datetime.
+    """
+    return np.array([Timestamp(ti).to_pydatetime() for ti in tnp])
+
+
+def doy2date(doy, year=2017):
+    """
+    USAGE
+    -----
+    t = doy2date(doy, year=2017)
+
+    Convert an array `doy` of decimal yeardays to
+    an array of datetime.datetime timestamps.
+    """
+    doy = np.array(doy)*86400 # [seconds/day].
+    tunit = 'seconds since %d-01-01 00:00:00'%year
+
+    return np.array([num2date(dn, tunit) for dn in doy])
 
 
 def flowfun(x, y, u, v, variable='psi', geographic=True):
