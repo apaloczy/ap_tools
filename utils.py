@@ -13,6 +13,7 @@ __all__ = ['seasonal_avg',
            'pydatetime2m_arr',
            'm2pydatetime_arr',
            'npdt2dt',
+           'dt2sfloat',
            'doy2date',
            'flowfun',
            'cumsimp',
@@ -260,6 +261,21 @@ def npdt2dt(tnp):
     Convert an array of numpy.datetime64 timestamps to datetime.datetime.
     """
     return np.array([Timestamp(ti).to_pydatetime() for ti in tnp])
+
+
+def dt2sfloat(t):
+    """
+    USAGE
+    -----
+    t_float = dt2sfloat(t_datetime)
+
+    Convert an array of datetime.datetime timestamps to an array of floats
+    representing elapsed seconds since the first timestamp.
+    """
+    t = np.array(t)
+    t0 = t[0]
+
+    return np.array([(tn - t0).total_seconds() for tn in t])
 
 
 def doy2date(doy, year=2017):
