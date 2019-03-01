@@ -133,9 +133,9 @@ def blkavg(x, y, every=2):
     xblk, yblk, yblkstd = np.array([]), np.array([]), np.array([])
     for i in range(every, nx+every, every):
         yi = y[i-every:i]
-        xblk = np.append(xblk, x[i-every:i].mean())
-        yblk = np.append(yblk, yi.mean())
-        yblkstd = np.append(yblkstd, yi.std())
+        xblk = np.append(xblk, np.nanmean(x[i-every:i]))
+        yblk = np.append(yblk, np.nanmean(yi))
+        yblkstd = np.append(yblkstd, np.nanstd(yi))
 
     return xblk, yblk, yblkstd
 
@@ -148,7 +148,7 @@ def blkavgdir(x, ydir, every=2, degrees=False, axis=None):
     nx = x.size
     xblk, yblk, yblkstd = np.array([]), np.array([]), np.array([])
     for i in range(every, nx+every, every):
-        xblk = np.append(xblk, x[i-every:i].mean())
+        xblk = np.append(xblk, np.nanmean(x[i-every:i]))
         yblk = np.append(yblk, avgdir(ydir[i-every:i], degrees=degrees, axis=axis))
 
     return xblk, yblk
@@ -157,7 +157,7 @@ def blkavgdir(x, ydir, every=2, degrees=False, axis=None):
 def blkavgt(t, x, every=2):
     """
     Block-averages a variable x(t). Returns its block average
-    and standard deviation and new t axis.
+    and the new t axis.
     """
     nt = t.size
     units = 'days since 01-01-01'
@@ -166,8 +166,8 @@ def blkavgt(t, x, every=2):
     tblk, xblk = np.array([]), np.array([])
     for i in range(every, nt+every, every):
         xi = x[i-every:i]
-        tblk = np.append(tblk, t[i-every:i].mean())
-        xblk = np.append(xblk, xi.mean())
+        tblk = np.append(tblk, np.nanmean(t[i-every:i]))
+        xblk = np.append(xblk, np.nanmean(xi))
 
     tblk = num2date(tblk, units=units, calendar=calendar)
     return tblk, xblk
