@@ -338,7 +338,7 @@ def crosscorr(x, y, nblks, maxlags=0, overlap=0, onesided=False, verbose=True):
         print("")
 
     lags = np.array(lags)
-    if auto:
+    if auto and not onesided:
         fo = np.where(lags==0)[0][0]
         xycorr[fo+1:] = xycorr[fo+1:] + xycorr[:fo]
         lags = lags[fo:]
@@ -683,6 +683,7 @@ def arsig(r0, Ndt, T1, T2, verbose=True):
     with integral timescales 'T1' and 'T2' and length 'Ndt'
     is significant.
     """
+    r0 = np.abs(r0) # Consider only the absolute value of r.
     Tslow = np.maximum(T1, T2) # The effective number of
     edof = Ndt/Tslow           # DoFs is constrained by the
                                # slower-decorrelating variable.

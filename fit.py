@@ -177,7 +177,7 @@ def fourfilt(x, dts, Tmax, Tmin):
 
     xmean = x.mean()
     x -= xmean # Remove the mean from data.
-    coeffs = fft(x) # Fourier-transform data.
+    coeffs = np.fft.fft(x) # Fourier-transform data.
 
     # Filter coefficients.
     f = ffund
@@ -192,7 +192,7 @@ def fourfilt(x, dts, Tmax, Tmin):
         coeffs[npts-i] = coeffs[i].conj()
 
     # Back-transform data and take real part.
-    xfilt = ifft(coeffs).real
+    xfilt = np.fft.ifft(coeffs).real
     xfilt += xmean # Add back the mean.
 
     return xfilt
