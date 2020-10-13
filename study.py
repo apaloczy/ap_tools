@@ -19,8 +19,6 @@ try:
 except:
 	pass
 
-plt.rcParams['text.usetex'] = True
-plt.rcParams['text.latex.unicode'] = True
 
 def ekman(r=4., plot=True, savefig=False):
 	"""
