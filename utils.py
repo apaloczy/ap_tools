@@ -23,6 +23,7 @@ __all__ = ['seasonal_avg',
            'lon360to180',
            'bbox2ij',
            'xy2dist',
+           'get_xtrackline',
            'get_arrdepth',
            'fpointsbox',
            'near',
@@ -623,13 +624,45 @@ def xy2dist(x, y, cyclic=False, datum='WGS84'):
     >>> msg = 'Difference of %.1f km over a %.0f km-long line (%.3f %% difference)'%(dd, d_ellipse, dperc)
     >>> print(msg)
     """
-    if datum is not 'Sphere':
+    if datum!="Sphere":
         xy = [LatLon(y0, x0, datum=Datums[datum]) for x0, y0 in zip(x, y)]
     else:
         xy = [LatLon_sphere(y0, x0) for x0, y0 in zip(x, y)]
     d = np.array([xy[n].distanceTo(xy[n+1]) for n in range(len(xy)-1)])
 
     return np.append(0, np.cumsum(d))
+
+def get_xtrackline(lon1, lon2, lat1, lat2, L=200, dL=10):
+    """
+    USAGE
+    -----
+    lonp, latp = get_xtrackline(lon1, lon2, lat1, lat2, L=200, dL=13)
+
+    Generates a great-circle line with length 2L (with L in km) that is perpendicular to the great-circle line
+    defined by the input points (lon1, lat1) and (lon2, lat2). The spacing between the points along the output
+    line is dL km. Assumes a spherical Earth.
+    """
+    km2m = 1e3
+    L, dL = L*km2m, dL*km2m
+    nh = int(L/dL)
+
+    p1, p2 = LatLon_sphere(lat1, lon1), LatLon_sphere(lat2, lon2)
+    angperp = p1.initialBearingTo(p2) + 90
+    angperpb = angperp + 180
+    pm = p1.midpointTo(p2)
+
+    # Create perpendicular line starting from the midpoint.
+    N = range(1, nh + 1)
+    pperp = []
+    _ = [pperp.append(pm.destination(dL*n, angperpb)) for n in N]
+    pperp.reverse()
+    pperp.append(pm)
+    _ = [pperp.append(pm.destination(dL*n, angperp)) for n in N]
+
+    lonperp = np.array([p.lon for p in pperp])
+    latperp = np.array([p.lat for p in pperp])
+
+    return lonperp, latperp
 
 def get_arrdepth(arr):
     """
