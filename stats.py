@@ -346,7 +346,7 @@ def crosscorr(x, y, nblks, maxlags=0, overlap=0, onesided=False, verbose=True):
 
     fgud=~np.isnan(xycorr)
 
-    return lags[fgud], xycorr[fgud]
+    return lags[fgud], xycorr[fgud], n
 
 
 def Tdecorr(Rxx, M=None, dtau=1., verbose=False):
