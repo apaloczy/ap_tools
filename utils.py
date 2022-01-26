@@ -797,7 +797,7 @@ def near2(x, y, x0, y0, npts=1, return_index=False):
     dy = y - y0
     dr = dx**2 + dy**2
     for n in range(npts):
-        xyidx = np.unravel_index(np.nanargmin(dr), dims=shp)
+        xyidx = np.unravel_index(np.nanargmin(dr), shp)
         if return_index:
             xyidxs.append(xyidx)
         xyn = (x[xyidx], y[xyidx])
