@@ -21,6 +21,8 @@ __all__ = ['seasonal_avg',
            'avgdir',
            'lon180to360',
            'lon360to180',
+           'compass2trig',
+           'trig2compass',
            'bbox2ij',
            'xy2dist',
            'get_xtrackline',
@@ -509,16 +511,36 @@ def lon180to360(lon):
 	Converts longitude values in the range [-180,+180]
 	to longitude values in the range [0,360].
 	"""
-	lon = np.asanyarray(lon)
-	return (lon + 360.0) % 360.0
+	lon = np.array(lon, ndmin=1)
+	return (lon + 360.) % 360.
 
 def lon360to180(lon):
 	"""
 	Converts longitude values in the range [0,360]
 	to longitude values in the range [-180,+180].
 	"""
-	lon = np.asanyarray(lon)
+	lon = np.array(lon, ndmin=1)
 	return ((lon + 180.) % 360.) - 180.
+
+def compass2trig(ang):
+    ang = np.array(ang, ndmin=1)
+    ang -= 90                       # Move origin to east.
+    ang = (ang + 360)%360           # Wrap negative angles back to 360.
+    ang = 360 - ang                 # Make positive couter-clockwise.
+    ang = ((ang + 180) % 360) - 180 # [0 360] to [-180 180].
+    ang[ang==360] = 0
+
+    return ang
+
+def trig2compass(ang):
+    ang = np.array(ang, ndmin=1)
+    ang = (ang + 360)%360 # [-180 180] to [0 360].
+    ang -= 90             # Move origin to north.
+    ang = (ang + 360)%360 # Wrap negative angles back to 360.
+    ang = 360 - ang       # Make positive clockwise.
+    ang[ang==360] = 0
+
+    return ang
 
 def bbox2ij(lon, lat, bbox=[-135., -85., -76., -64.], FIX_IDL=True):
     """
