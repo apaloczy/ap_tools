@@ -3,13 +3,9 @@ ap_tools
 
 Loose scripts and functions for personal use, mainly physical oceanography-related utilities.
 
-datasets: Functions to handle datasets (e.g., WOA, ETOPO).
-
 dyn:      Functions to calculate dynamical quantities.
 
 roms:     Ancillary functions to manipulate ROMS variables.
-
-sat:      Functions to manipulate satellite data.
 
 study:    Functions used in study problems.
 
