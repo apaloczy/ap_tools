@@ -69,7 +69,6 @@ from scipy import signal
 from scipy.signal import savgol_filter
 from glob import glob
 from netCDF4 import Dataset, num2date, date2num
-# from pandas import rolling_window # FIXME, new pandas way of doing this is, e.g., arr = Series(...).rolling(...).mean()
 from pandas import Timestamp
 from gsw import distance
 from pygeodesy import Datums, VincentyError
@@ -338,7 +337,7 @@ def flowfun(x, y, u, v, variable='psi', geographic=True):
 	Translated to Python by André Palóczy, January 15, 2015.
 	Modified by André Palóczy on January 15, 2015.
 	"""
-	x,y,u,v = map(np.asanyarray, (x,y,u,v))
+	x,y,u,v = map(np.array, (x,y,u,v))
 
 	if not x.shape==y.shape==u.shape==v.shape:
 		print("Error: Arrays (x, y, u, v) must be of equal shape.")
@@ -404,7 +403,7 @@ def cumsimp(y):
 	Source: http://www-pord.ucsd.edu/~matlab/stream.htm
 	Translated to Python by André Palóczy, January 15, 2015.
 	"""
-	y = np.asanyarray(y)
+	y = np.array(y)
 
 	## 3-point interpolation coefficients to midpoints.
 	## Second-order polynomial (parabolic) interpolation coefficients
@@ -464,7 +463,7 @@ def rot_vec(u, v, angle=-45, degrees=True):
 	>>> v = -1.
 	>>> u2,v2 = rot_vec(u,v, angle=-30.)
 	"""
-	u,v = map(np.asanyarray, (u,v))
+	u,v = map(np.array, (u,v))
 	if degrees:
 		angle = angle*np.pi/180. # Degrees to radians.
 
@@ -584,7 +583,7 @@ def bbox2ij(lon, lat, bbox=[-135., -85., -76., -64.], FIX_IDL=True):
     Modified by André Palóczy on August 20, 2016 to handle bboxes that
     cross the International Date Line or the edges of the longitude array.
     """
-    lon, lat, bbox = map(np.asanyarray, (lon, lat, bbox))
+    lon, lat, bbox = map(np.array, (lon, lat, bbox))
 
     # Test whether the wanted bbox crosses the International Date Line (brach cut of the longitude array).
     dlon = bbox[:2].ptp()
@@ -845,7 +844,7 @@ def mnear(x, y, x0, y0):
 	Finds the the point in a (lons,lats) line
 	that is closest to a specified (lon0,lat0) point.
 	"""
-	x,y,x0,y0 = map(np.asanyarray, (x,y,x0,y0))
+	x,y,x0,y0 = map(np.array, (x,y,x0,y0))
 	point = (x0,y0)
 
 	d = np.array([])
@@ -873,7 +872,7 @@ def refine(line, nref=100, close=True):
 	the original line is repeated at the end of the
 	refined line, as in a closed polygon.
 	"""
-	line = np.squeeze(np.asanyarray(line))
+	line = np.squeeze(np.array(line))
 
 	if close:
 		line = np.append(line,line[0])
@@ -956,7 +955,7 @@ def sphericalpolygon_area(lons, lats, R=6371000.):
 
 	Source: http://stackoverflow.com/questions/4681737/how-to-calculate-the-area-of-a-polygon-on-the-earths-surface-using-python
 	"""
-	lons, lats = map(np.asanyarray, (lons, lats))
+	lons, lats = map(np.array, (lons, lats))
 	N = lons.size
 
 	angles = np.empty(N)
@@ -986,7 +985,7 @@ def greatCircleBearing(lon1, lat1, lon2, lat2):
 
 	Source: http://stackoverflow.com/questions/4681737/how-to-calculate-the-area-of-a-polygon-on-the-earths-surface-using-python
 	"""
-	lon1, lat1, lon2, lat2 = map(np.asanyarray, (lon1, lat1, lon2, lat2))
+	lon1, lat1, lon2, lat2 = map(np.array, (lon1, lat1, lon2, lat2))
 	dLong = lon1 - lon2
 	d2r = np.pi/180.
 
@@ -1066,7 +1065,7 @@ def weim(x, N, kind='hann', badflag=-9999, beta=14):
 	wstr = 'np.' + kind + '(N)'
 	w = eval(wstr)
 
-	x = np.asarray(x).flatten()
+	x = np.array(x).flatten()
 	Fnan = np.isnan(x).flatten()
 
 	ln = (N-1)/2
@@ -1180,7 +1179,7 @@ def smoo2(A, hei, wid, kind='hann', badflag=-9999, beta=14):
 		wstr = 'np.outer(np.' + kind + '(hei), np.' + kind + '(wid))'
 		wdw = eval(wstr)
 
-	A = np.asanyarray(A)
+	A = np.array(A)
 	Fnan = np.isnan(A)
 	imax, jmax = A.shape
 	As = np.nan*np.ones( (imax, jmax) )
@@ -1282,7 +1281,7 @@ def linear_trend(series, return_line=True):
 
 	Adapted from pylab.detrend_linear.
 	"""
-	series = np.asanyarray(series)
+	series = np.array(series)
 	x = np.arange(series.size, dtype=np.float_)
 
 	C = np.cov(x, series, bias=1) # Covariance matrix.
@@ -1340,7 +1339,7 @@ def topo_slope(lon, lat, h):
 	coordinates ('lon', 'lat') using first-order finite differences.
 	The output arrays have shape (M-1,L-1), where M,L = h.shape().
 	"""
-	lon,lat,h = map(np.asanyarray, (lon,lat,h))
+	lon,lat,h = map(np.array, (lon,lat,h))
 	deg2m = 1852.*60.    # m/deg.
 	deg2rad = np.pi/180. # rad/deg.
 
@@ -1394,7 +1393,7 @@ def curvature_geometric(x, y):
 	Source: http://www.mathworks.com/matlabcentral/newsreader/view_thread/125637
 	Translated to Python by André Palóczy, January 19, 2015.
 	"""
-	x,y = map(np.asanyarray, (x,y))
+	x,y = map(np.array, (x,y))
 
 	x1 = x[:-2]; x2 = x[1:-1]; x3 = x[2:]
 	y1 = y[:-2]; y2 = y[1:-1]; y3 = y[2:]
@@ -1526,7 +1525,7 @@ def isopyc_depth(z, dens0, isopyc=1027.75, dzref=1.):
     is generated for calculating the depth of the isopycnal. The smaller 'dzref', the smoother
     the resolution of the returned isopycnal depth array 'hisopyc'.
     """
-    z, dens0 = map(np.asanyarray, (z, dens0))
+    z, dens0 = map(np.array, (z, dens0))
     ny, nx = dens0.shape[1:]
     zref = np.arange(z.min(), z.max(), dzref)
 
@@ -1561,7 +1560,7 @@ def whiten_zero(x, y, z, ax, cs, n=1, cmap=plt.cm.RdBu_r, zorder=9):
 	neighboring patches about the zero contour created
 	by a command like 'cs = ax.contourf(x, y, z)'.
 	"""
-	x, y, z = map(np.asanyarray, (x,y,z))
+	x, y, z = map(np.array, (x,y,z))
 	white = (1.,1.,1.)
 	cslevs = cs.levels
 	assert 0. in cslevs
@@ -1707,7 +1706,7 @@ def bb_map(lons, lats, ax, projection='merc', resolution='i', drawparallels=True
 	Coastlines, countries, states, parallels and meridians
 	are drawn, and continents are filled.
 	"""
-	lons,lats = map(np.asanyarray, (lons,lats))
+	lons,lats = map(np.array, (lons,lats))
 	lonmin,lonmax = lons.min(),lons.max()
 	latmin,latmax = lats.min(),lats.max()
 

@@ -22,7 +22,7 @@ def deg2m_dist(lon, lat):
 	(forward/backward) finite-differences for the interior (edge) points. Assumes
     a locally rectangular cartesian on the scales of 'dx' and 'dy'.
 	"""
-	lon, lat = map(np.asanyarray, (lon, lat))
+	lon, lat = map(np.array, (lon, lat))
 
 	dlat, _ = np.gradient(lat)             # [deg]
 	_, dlon = np.gradient(lon)             # [deg]
@@ -43,7 +43,7 @@ def divergence(lon, lat, u, v):
 	the 'u' and 'v' velocity arrays (in m/s) specified in spherical
 	coordinates by the 'lon' and 'lat' 2D meshgrid-type arrays (in degrees).
 	"""
-	lon, lat, u, v = map(np.asanyarray, (lon, lat, u, v))
+	lon, lat, u, v = map(np.array, (lon, lat, u, v))
 
 	dx, dy = deg2m_dist(lon, lat) # [m]
 	_, dux = np.gradient(u)
@@ -65,7 +65,7 @@ def strain(lon, lat, u, v):
     in 1/s, from the 'u' and 'v' velocity arrays (in m/s) specified in spherical coordinates
     by the 'lon' and 'lat' 2D meshgrid-type arrays (in degrees).
     """
-    lon, lat, u, v = map(np.asanyarray, (lon, lat, u, v))
+    lon, lat, u, v = map(np.array, (lon, lat, u, v))
 
     dx, dy = deg2m_dist(lon, lat) # [m]
     duy, dux = np.gradient(u)
@@ -136,7 +136,7 @@ def pgf(z, y, x, eta, rho, pa=0., rho0=1025., geographic=True):
 	(latitude,longitude) and are converted to meters before
 	computing (dy,dx). If geographic==False, (y,x) are assumed to be in meters.
 	"""
-	z, y, x, eta, rho = map(np.asanyarray, (z, y, x, eta, rho))
+	z, y, x, eta, rho = map(np.array, (z, y, x, eta, rho))
 
 	ny, nx = eta.shape                       # Shape of the (x,y,u,v) arrays.
 	if z.ndim==1:

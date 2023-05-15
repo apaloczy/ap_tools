@@ -32,7 +32,7 @@ from ap_tools.utils import near
 try:
 	from scikits import bootstrap
 except:
-	print("scikits.bootstrap not installed. Function 'rci_boot' will not be available.")
+	pass
 
 def gauss_curve(r, xmean, xstd):
 	"""
@@ -65,7 +65,7 @@ def principal_ang(x, y):
 	----------
 	TODO
 	"""
-	x, y = map(np.asanyarray, (x,y))
+	x, y = map(np.array, (x,y))
 	assert x.size==y.size
 
 	N = x.size
@@ -91,7 +91,7 @@ def nmoment(x, n=1):
 	----------
 	TODO
 	"""
-	x = np.asanyarray(x)
+	x = np.array(x)
 
 	N = x.size
 	m1 = np.sum(x)/N
@@ -122,7 +122,7 @@ def skewness(x):
 	----------
 	TODO
 	"""
-	x = np.asanyarray(x)
+	x = np.array(x)
 
 	m3 = nmoment(x, 3)
 	m2 = nmoment(x, 2)
@@ -149,7 +149,7 @@ def kurtosis(x):
 	----------
 	TODO
 	"""
-	x = np.asanyarray(x)
+	x = np.array(x)
 
 	m4 = nmoment(x, 4)
 	m2 = nmoment(x, 2)
@@ -171,7 +171,7 @@ def rcoeff(x, y):
 	Data analysis methods in physical oceanography,
 	p. 257, equation 3.97a.
 	"""
-	x,y = map(np.asanyarray, (x,y))
+	x,y = map(np.array, (x,y))
 
 	# Sample size.
 	assert x.size==y.size
@@ -219,7 +219,7 @@ def autocorr(x, biased=True):
 	Gille lecture notes on data analysis, available
 	at http://www-pord.ucsd.edu/~sgille/mae127/lecture10.pdf
 	"""
-	x = np.asanyarray(x)
+	x = np.array(x)
 
 	N = x.size # Sample size.
 	Cxx = np.zeros(N)
@@ -385,7 +385,7 @@ def Tdecorr(Rxx, M=None, dtau=1., verbose=False):
     Gille lecture notes on data analysis, available
     at http://www-pord.ucsd.edu/~sgille/mae127/lecture10.pdf
     """
-    Rxx = np.asanyarray(Rxx)
+    Rxx = np.array(Rxx)
     C0 = Rxx[0]
     N = Rxx.size # Sequence size.
 
@@ -758,7 +758,7 @@ def rci_boot(x, y, alpha=0.95, verbose=True, n_samples=10000, method='bca'):
 	-------
 	TODO
 	"""
-	x,y = map(np.asanyarray, (x,y))
+	x,y = map(np.array, (x,y))
 	## Bootstrapped confidence intervals.
 	xl, xu = bootstrap.ci((x, y), statfunction=rcoeff, alpha=(1-alpha), n_samples=n_samples, method=method, multi=True)
 

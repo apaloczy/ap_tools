@@ -19,7 +19,6 @@ except:
 		from seawater.csiro import pres, pden, grav
 	except:
 		pass
-# from gsw import SA_from_SP, CT_from_pt, rho, grav
 
 try:
 	from romslab import RomsGrid, RunSetup
@@ -592,7 +591,7 @@ def make_flat_ini(grdfile, setup_file, profile_z, profile_T, profile_S, return_a
 	temp, salt, u, v, ubar, vbar, zeta: The ROMS initial fields. temp and salt are have flat isolines,
 	                                    and u, v, ubar, vbar and zeta are zero everywhere.
 	"""
-	profile_z, profile_T, profile_S = map(np.asanyarray, (profile_z, profile_T, profile_S))
+	profile_z, profile_T, profile_S = map(np.array, (profile_z, profile_T, profile_S))
 
 	# Getting grid parameters from *.setup file.
 	Run = RunSetup(setup_file)
