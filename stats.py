@@ -18,6 +18,7 @@ __all__ = ['gauss_curve',
 		   'rsig',
 		   'rsig_student',
            'arsig',
+		   'arsig_student',
 		   'rci_fisher',
 		   'rci_boot']
 
@@ -691,6 +692,24 @@ def arsig(r0, Ndt, T1, T2, verbose=True):
     issig = True
     while issig and alphai<1.0:
         rsigi = rsig(edof, alpha=alphai)
+        issig=r0>=rsigi
+        alphai+=0.01
+
+    if verbose:
+        print("Queried r = %.3f with %.1f EDoF. It is significant at **%.2f** CL."%(r0, edof, alphai))
+
+    return alphai
+
+
+def arsig_student(r0, Ndt, T1, T2, verbose=True):
+    r0 = np.abs(r0)
+    Tslow = np.maximum(T1, T2) # The effective number of
+    edof = Ndt/Tslow           # DoFs is constrained by the
+                               # slower-decorrelating variable.
+    alphai = 0.51
+    issig = True
+    while issig and alphai<1.0:
+        rsigi = rsig_student(edof, alpha=alphai)
         issig=r0>=rsigi
         alphai+=0.01
 
